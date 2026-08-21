@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>N4 Boost Drills — 日本語N4</title>
+<style>
+:root{
+  --bg:#12131a;--bg2:#0d0e14;--surface:#1b1d28;--surface2:#222533;
+  --line:#2e3242;--ink:#ece8df;--ink-dim:#a6a8b6;--ink-faint:#8a8d9e;
+  --jade:#5fc28a;--jade-dim:#2c6347;--jade-bg:#16241c;
+  --vermilion:#e2553f;--verm-dim:#5c2a23;--verm-bg:#2a1413;
+  --gold:#d8af52;--gold-bg:#2a2410;--gold-dim:#5a4a20;
+  --indigo:#7c8cf0;--indigo-dim:#363c6e;--indigo-bg:#1a1d35;
+  --rose:#e07ba1;--fail-text:#f08080;--hdr-bg:#0d0e14ee;
+  --radius:14px;
+  --jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","Meiryo","Noto Sans JP",sans-serif;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f5f4f0;--bg2:#eae8e2;--surface:#ffffff;--surface2:#f0ede7;
+  --line:#d4d0c8;--ink:#1c1d26;--ink-dim:#525468;--ink-faint:#888a9a;
+  --jade:#1a7040;--jade-dim:#a8dfc0;--jade-bg:#eaf7f0;
+  --vermilion:#c03020;--verm-dim:#f5c5be;--verm-bg:#fdf0ee;
+  --gold:#8a6610;--gold-bg:#fdf4e0;--gold-dim:#d4aa44;
+  --indigo:#3d50d8;--indigo-dim:#c8cef8;--indigo-bg:#eef0fd;
+  --rose:#b04570;--fail-text:#c03020;--hdr-bg:#f5f4f0ee;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);min-height:100vh;padding-top:58px;line-height:1.6}
+button{font-family:inherit;cursor:pointer;color:var(--ink)}
+a{color:var(--indigo);text-decoration:none}
+.jp{font-family:var(--jp)}
+header{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:var(--hdr-bg);border-bottom:1px solid var(--line);backdrop-filter:blur(10px);display:flex;align-items:center;gap:14px;padding:0 20px}
+.hdr-brand{font-family:var(--jp);font-size:20px;font-weight:800;color:var(--vermilion);text-decoration:none}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-back{font-size:13px;color:var(--ink-dim);border:1px solid var(--line);border-radius:8px;padding:5px 11px;background:var(--surface);text-decoration:none}
+.hdr-back:hover{color:var(--ink);border-color:var(--ink-faint)}
+.theme-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;width:34px;height:34px;display:grid;place-items:center;font-size:15px;color:var(--ink)}
+
+/* Landing */
+.page{max-width:860px;margin:0 auto;padding:24px 18px 80px}
+.landing-hero{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:20px}
+.landing-hero h1{font-size:clamp(20px,3.5vw,26px);font-weight:800;margin-bottom:6px}
+.landing-hero p{color:var(--ink-dim);font-size:14px;max-width:60ch}
+.filter-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-tab{padding:7px 14px;border-radius:20px;border:1px solid var(--line);background:var(--surface2);font-size:13px;font-weight:600;color:var(--ink-dim);cursor:pointer;transition:all .15s}
+.filter-tab.active{background:var(--indigo-bg);border-color:var(--indigo);color:var(--indigo)}
+.drill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.drill-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
+.drill-card:hover{border-color:var(--ink-faint);transform:translateY(-2px)}
+.dc-cat{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:8px}
+.dc-cat.vocab{color:var(--jade)}
+.dc-cat.grammar{color:var(--indigo)}
+.dc-cat.reading{color:var(--gold)}
+.dc-cat.listening{color:var(--rose)}
+.dc-title{font-family:var(--jp);font-size:17px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.dc-subtitle{font-size:12px;color:var(--ink-dim);margin-bottom:10px}
+.dc-meta{display:flex;gap:8px;font-size:11.5px;color:var(--ink-faint)}
+.dc-q{background:var(--surface2);border-radius:6px;padding:2px 7px}
+.drill-card[data-hidden="true"]{display:none}
+
+/* Drill screen */
+.drill-screen{display:none;max-width:680px;margin:0 auto;padding:8px 18px 80px}
+.drill-screen.active{display:block}
+.drill-top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.drill-back{font-size:13px;color:var(--ink-dim);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer}
+.drill-back:hover{border-color:var(--ink-faint);color:var(--ink)}
+.drill-title-area h2{font-size:17px;font-weight:700;font-family:var(--jp)}
+.drill-title-area p{font-size:12px;color:var(--ink-faint)}
+.drill-prog-bar{height:5px;background:var(--surface2);border-radius:20px;margin-bottom:20px;overflow:hidden}
+.drill-prog-fill{height:100%;background:linear-gradient(90deg,var(--jade),var(--indigo));transition:width .3s;border-radius:20px}
+.q-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:14px}
+.qtype-badge{font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600}
+.passage-box{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-family:var(--jp);font-size:15px;line-height:1.9;white-space:pre-wrap;color:var(--ink)}
+.passage-label{font-family:var(--ui);font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;display:block}
+.q-text{font-family:var(--jp);font-size:17px;line-height:1.8;margin-bottom:14px;color:var(--ink)}
+.opts{display:grid;gap:8px}
+.opt-btn{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;background:var(--surface2);border:2px solid var(--line);border-radius:11px;text-align:left;font-size:15px;font-family:var(--jp);color:var(--ink);transition:border-color .15s,background .15s}
+.opt-btn:hover:not(:disabled){border-color:var(--ink-faint);background:var(--bg2)}
+.opt-btn .num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--ink-faint);flex-shrink:0;font-family:var(--ui)}
+.opt-btn.correct{border-color:var(--jade)!important;background:var(--jade-bg)!important}
+.opt-btn.correct .num{border-color:var(--jade);color:var(--jade)}
+.opt-btn.wrong{border-color:var(--vermilion)!important;background:var(--verm-bg)!important}
+.opt-btn.wrong .num{border-color:var(--vermilion);color:var(--vermilion)}
+.opt-btn:disabled{cursor:default}
+.explain-box{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13.5px;color:var(--ink-dim);line-height:1.5;display:none}
+.explain-box.show{display:block}
+.explain-box.ok{background:var(--jade-bg);border:1px solid var(--jade-dim)}
+.explain-box.bad{background:var(--verm-bg);border:1px solid var(--verm-dim)}
+.explain-box .fb-label{font-weight:700;margin-bottom:3px;display:block;font-size:12px}
+.explain-box.ok .fb-label{color:var(--jade)}
+.explain-box.bad .fb-label{color:var(--vermilion)}
+.next-btn{width:100%;padding:13px;background:var(--indigo-bg);border:2px solid var(--indigo);border-radius:12px;color:var(--indigo);font-size:15px;font-weight:700;display:none;margin-top:4px}
+.next-btn.show{display:block}
+.next-btn:hover{filter:brightness(1.1)}
+
+/* Summary */
+.summary-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;text-align:center;margin-bottom:20px}
+.summary-score{font-size:56px;font-weight:900;line-height:1}
+.summary-score.all{color:var(--jade)}
+.summary-score.good{color:var(--gold)}
+.summary-score.ok{color:var(--indigo)}
+.summary-score.low{color:var(--vermilion)}
+.summary-label{font-size:14px;color:var(--ink-dim);margin-bottom:14px}
+.streak-dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.s-dot{width:16px;height:16px;border-radius:50%}
+.s-dot.hit{background:var(--jade)}
+.s-dot.miss{background:var(--vermilion)}
+.summary-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.sum-btn{padding:11px 22px;border-radius:11px;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface2);color:var(--ink);cursor:pointer}
+.sum-btn.primary{background:var(--jade-bg);border-color:var(--jade);color:var(--jade)}
+.sum-btn.indigo-btn{background:var(--indigo-bg);border-color:var(--indigo);color:var(--indigo)}
+</style>
+</head>
+<body>
+<script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
+<script>(function(){function v(k){try{return JSON.parse(sessionStorage.getItem(k)||"null")?.verified===true;}catch{return false;}}if(!v("n3_user_session")&&!v("n3_admin_verified"))location.replace("login.html");})();</script>
+
+<header>
+  <a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
+  <span style="font-size:14px;color:var(--ink-dim);font-weight:500">Boost Drills</span>
+  <div class="hdr-right">
+    <a class="hdr-back" href="n4-pass-engine.html">← Pass Engine</a>
+    <a class="hdr-back" href="dashboard.html" title="Dashboard">🏠</a>
+    <a class="hdr-back" href="n3-pass-engine.html" title="Switch to N3">⇄ N3</a>
+    <button class="theme-btn" id="themeBtn">☀</button>
+  </div>
+</header>
+
+<!-- LANDING -->
+<div class="page" id="landingPage">
+  <div class="landing-hero">
+    <h1>⚡ N4 Boost Drills</h1>
+    <p>10-question randomized drills with instant feedback. Pick a category to target your weak spots — modelled on nihonez.com N4 question formats.</p>
+  </div>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterDrills('all')">All</button>
+    <button class="filter-tab" onclick="filterDrills('vocab')">語彙 Vocabulary</button>
+    <button class="filter-tab" onclick="filterDrills('grammar')">文法 Grammar</button>
+    <button class="filter-tab" onclick="filterDrills('reading')">読解 Reading</button>
+    <button class="filter-tab" onclick="filterDrills('listening')">聴解 Listening</button>
+  </div>
+  <div class="drill-grid" id="drillGrid"></div>
+</div>
+
+<!-- DRILL SCREEN -->
+<div class="drill-screen" id="drillScreen">
+  <div class="drill-top">
+    <button class="drill-back" onclick="backToLanding()">← Drills</button>
+    <div class="drill-title-area">
+      <h2 id="drillTitle" class="jp">漢字読み</h2>
+      <p id="drillSubtitle">Question 1 of 10</p>
+    </div>
+  </div>
+  <div class="drill-prog-bar"><div class="drill-prog-fill" id="drillProgFill" style="width:0%"></div></div>
+  <div id="drillBody"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  DRILL DATA — 12 decks
+// ════════════════════════════════════════════
+const DRILLS = [
+{id:"kanji-yomi", cat:"vocab", title:"漢字読み", subtitle:"Read the underlined kanji", count:12,
+ questions:[
+  {q:"「今日は天気がいいですね。」\n「天気」の読み方は？",options:["てんき","てんかい","あまき","てきかい"],answer:0,explanation:"天気（てんき）= weather。天（てん）＋気（き）。"},
+  {q:"「先週、友達と水泳をしました。」\n「水泳」の読み方は？",options:["すいえい","みずおよ","みずえい","すいよう"],answer:0,explanation:"水泳（すいえい）= swimming。水（すい）＋泳（えい）。"},
+  {q:"「駅前に銀行があります。」\n「銀行」の読み方は？",options:["ぎんこう","かねこう","ぎんこ","きんこう"],answer:0,explanation:"銀行（ぎんこう）= bank。銀（ぎん）＋行（こう）。"},
+  {q:"「春になると花が咲きます。」\n「春」の読み方は？",options:["はる","しゅん","あき","なつ"],answer:0,explanation:"春（はる）= spring。On-reading: しゅん（春分）。"},
+  {q:"「その映画は有名です。」\n「有名」の読み方は？",options:["ゆうめい","ありめい","うめい","ゆうみょう"],answer:0,explanation:"有名（ゆうめい）= famous。有（ゆう）＋名（めい）。"},
+  {q:"「彼女は医者になりたい。」\n「医者」の読み方は？",options:["いしゃ","いもの","いそん","くすりしゃ"],answer:0,explanation:"医者（いしゃ）= doctor。医（い）＋者（しゃ）。"},
+  {q:"「毎日運動するのはいいことです。」\n「運動」の読み方は？",options:["うんどう","うごき","いどう","うんどく"],answer:0,explanation:"運動（うんどう）= exercise/movement。"},
+  {q:"「この問題の答えを教えてください。」\n「答え」の読み方は？",options:["こたえ","こたえい","もんえ","とうえ"],answer:0,explanation:"答え（こたえ）= answer。答える（こたえる）to answer。"},
+  {q:"「電話番号を教えてもらいました。」\n「番号」の読み方は？",options:["ばんごう","ばんのり","かずごう","ばんこう"],answer:0,explanation:"番号（ばんごう）= number（phone/ID）。番（ばん）＋号（ごう）。"},
+  {q:"「旅行の計画を立てました。」\n「計画」の読み方は？",options:["けいかく","けいが","かけい","かいけい"],answer:0,explanation:"計画（けいかく）= plan/planning。計（けい）＋画（かく）。"},
+  {q:"「来月引っ越しをします。」\n「引っ越し」の読み方は？",options:["ひっこし","ひっこい","ひっこく","ひっさい"],answer:0,explanation:"引っ越し（ひっこし）= moving house。引く（pull）＋越す（cross/move）。"},
+  {q:"「彼は会社の社長です。」\n「社長」の読み方は？",options:["しゃちょう","しゃちょ","かいちょ","かいちょう"],answer:0,explanation:"社長（しゃちょう）= company president。社（しゃ）＋長（ちょう）。"},
+]},
+
+{id:"orthography", cat:"vocab", title:"表記", subtitle:"Choose the correct kanji for the reading", count:8,
+ questions:[
+  {q:"「ゆうびんきょく」を漢字で書くと？",options:["郵便局","友便局","由便局","幽便局"],answer:0,explanation:"郵便局（ゆうびんきょく）= post office。郵（ゆう）便（びん）局（きょく）。"},
+  {q:"「しんごう」を漢字で書くと？",options:["信号","真号","神号","信語"],answer:0,explanation:"信号（しんごう）= traffic signal/light。信（しん）＋号（ごう）。"},
+  {q:"「じてんしゃ」を漢字で書くと？",options:["自転車","字転車","自店車","自転写"],answer:0,explanation:"自転車（じてんしゃ）= bicycle。自（じ）転（てん）車（しゃ）。"},
+  {q:"「かんがえる」を漢字で書くと？",options:["考える","感える","換える","観える"],answer:0,explanation:"考える（かんがえる）= to think/consider。"},
+  {q:"「きけん」を漢字で書くと？",options:["危険","希険","機険","季険"],answer:0,explanation:"危険（きけん）= danger/dangerous。危（き）＋険（けん）。"},
+  {q:"「おとな」を漢字で書くと？",options:["大人","男人","大入","大仁"],answer:0,explanation:"大人（おとな）= adult。大（おと）人（な）—irregular reading。"},
+  {q:"「ねつ」を漢字で書くと？",options:["熱","熱","暑","温"],answer:0,explanation:"熱（ねつ）= heat/fever。「熱がある」= have a fever。"},
+  {q:"「かなしい」を漢字で書くと？",options:["悲しい","哀しい","悲しい","傍しい"],answer:0,explanation:"悲しい（かなしい）= sad。悲（かな）しい。"},
+]},
+
+{id:"context", cat:"vocab", title:"文脈規定", subtitle:"Fill in the blank from context", count:8,
+ questions:[
+  {q:"この部屋は（　）のため、クーラーをつけました。",options:["暑い","寒い","涼しい","暖かい"],answer:0,explanation:"暑い（あつい）= hot (weather/room)。暑いのでクーラーをつける is natural."},
+  {q:"彼女は（　）性格なので、友達が多い。",options:["明るい","暗い","厳しい","忙しい"],answer:0,explanation:"明るい（あかるい）= bright/cheerful personality。明るい性格＝friendly/outgoing."},
+  {q:"この薬を飲めば、頭痛が（　）でしょう。",options:["治る","悪化する","続く","増える"],answer:0,explanation:"治る（なおる）= to heal/get better。薬で治る = recover with medicine."},
+  {q:"財布を（　）、困っています。",options:["なくして","見つけて","作って","買って"],answer:0,explanation:"なくして（lost）→「財布をなくして困っている」= lost my wallet and am in trouble."},
+  {q:"彼は（　）があるので、仕事が早い。",options:["経験","失敗","理由","希望"],answer:0,explanation:"経験（けいけん）= experience。経験があるので仕事が早い = fast because experienced."},
+  {q:"この店は（　）がいいので、いつも混んでいる。",options:["評判","財布","値段","性格"],answer:0,explanation:"評判（ひょうばん）= reputation. 評判がいい = has a good reputation."},
+  {q:"試験の（　）を確認してから、勉強を始めました。",options:["範囲","合格","経験","失敗"],answer:0,explanation:"範囲（はんい）= scope/range (of exam). 試験の範囲を確認する = check exam scope."},
+  {q:"スピーチの（　）に、何度も練習しました。",options:["前に","後で","最中","おかげで"],answer:0,explanation:"前に（まえに）= before. スピーチの前に練習する = practice before the speech."},
+]},
+
+{id:"paraphrase", cat:"vocab", title:"言い換え", subtitle:"Find the sentence with the closest meaning", count:6,
+ questions:[
+  {q:"「彼女はとても親切だ。」\nに最も意味が近いのは？",options:["彼女はとても人に優しい","彼女はとても元気だ","彼女はとても頭がいい","彼女はとても人気がある"],answer:0,explanation:"親切（しんせつ）= kindness ≈ 人に優しい (kind to people)."},
+  {q:"「この問題は複雑だ。」\nに最も意味が近いのは？",options:["この問題はわかりにくい","この問題は簡単だ","この問題は新しい","この問題は長い"],answer:0,explanation:"複雑（ふくざつ）= complex ≈ わかりにくい (hard to understand)."},
+  {q:"「急に雨が降ってきた。」\nに最も意味が近いのは？",options:["突然雨が降り始めた","少しずつ雨が降った","予報通りに雨が降った","雨が止んできた"],answer:0,explanation:"急に（きゅうに）= suddenly ≈ 突然（とつぜん）."},
+  {q:"「彼は仕事に熱心だ。」\nに最も意味が近いのは？",options:["彼は仕事を一生懸命する","彼は仕事が好きではない","彼は仕事が速い","彼は仕事が多い"],answer:0,explanation:"熱心（ねっしん）= enthusiastic/diligent ≈ 一生懸命する (work hard)."},
+  {q:"「この店は値段が手ごろだ。」\nに最も意味が近いのは？",options:["この店は安くて買いやすい","この店は高くて有名だ","この店は品物がいい","この店はサービスがいい"],answer:0,explanation:"手ごろ（てごろ）= reasonable price ≈ 安くて買いやすい."},
+  {q:"「彼女の話はいつも面白い。」\nに最も意味が近いのは？",options:["彼女の話はいつも楽しい","彼女の話はいつも長い","彼女の話はいつも正しい","彼女の話はいつも役に立つ"],answer:0,explanation:"面白い（おもしろい）= interesting/fun ≈ 楽しい in this context."},
+]},
+
+{id:"usage", cat:"vocab", title:"用法", subtitle:"Which sentence uses the word correctly?", count:4,
+ questions:[
+  {q:"「目的」の正しい使い方はどれですか？",options:["旅行の目的は文化を学ぶことです","彼は目的がかっこいいです","目的を飲んで元気になりました","今日の天気は目的です"],answer:0,explanation:"目的（もくてき）= purpose/goal. 「旅行の目的は〜」= the purpose of the trip is ~."},
+  {q:"「準備」の正しい使い方はどれですか？",options:["試験の準備をしっかりしました","準備がとても美しいです","準備を食べました","今日は準備が高いです"],answer:0,explanation:"準備（じゅんび）= preparation. 「準備をする」= to prepare."},
+  {q:"「緊張」の正しい使い方はどれですか？",options:["面接の前は緊張しました","緊張を食べてリラックスした","彼女は緊張がきれいです","今日は緊張がいい天気です"],answer:0,explanation:"緊張する（きんちょうする）= to be nervous. 「面接前に緊張する」= get nervous before an interview."},
+  {q:"「心配」の正しい使い方はどれですか？",options:["両親はいつも私のことを心配している","心配がとても大きいです","心配を飲んで眠れない","心配な映画を見ました"],answer:0,explanation:"心配する（しんぱいする）= to worry. 「〜のことを心配する」= worry about ~."},
+]},
+
+{id:"grammar-fill", cat:"grammar", title:"文法選択", subtitle:"Choose the correct grammar form", count:12,
+ questions:[
+  {q:"彼女は日本語（　）英語も話せます。",options:["だけでなく","だけ","しか","まで"],answer:0,explanation:"〜だけでなく〜も = not only ~ but also ~. 「日本語だけでなく英語も」= not just Japanese but also English."},
+  {q:"宿題を終わら（　）から、遊んでもいい。",options:["せて","して","ない","ずに"],answer:0,explanation:"終わらせる（使役）= to make finish/complete. 「終わらせてから」= after finishing."},
+  {q:"毎朝六時に起き（　）にしています。",options:["る よう","ないよう","るため","るのが"],answer:0,explanation:"〜ようにしている = making it a habit to do ~. 「起きるようにしている」= trying/making sure to wake up."},
+  {q:"この映画は子供（　）見られます。",options:["でも","しか","だけ","ほど"],answer:0,explanation:"〜でも = even ~. 「子供でも見られる」= even children can watch it."},
+  {q:"駅で友達に会った（　）、一緒に帰りました。",options:["ので","のに","たら","ながら"],answer:0,
+   explanation:"〜ので = because. 「会ったので一緒に帰った」= because I met her, we went home together. のに would imply an unexpected contrast."},
+  {q:"雨が降り（　）、傘を持って行きました。",options:["そうなので","そうだから","そうなのに","そうなのか"],answer:0,explanation:"〜そうなので = because it looks like it'll ~. 「降りそうなので」= because it looks like rain."},
+  {q:"彼は（　）仕事をするタイプです。",options:["コツコツ","どんどん","なかなか","そろそろ"],answer:0,explanation:"コツコツ = steadily/diligently (step by step). Describes steady, careful workers."},
+  {q:"先生に聞い（　）みました。",options:["て","に","が","から"],answer:0,explanation:"〜てみる = try doing ~. 「聞いてみる」= try asking."},
+  {q:"彼女はフランス語を話す（　）できます。",options:["ことが","のが","ために","よりも"],answer:0,explanation:"〜ことができる = be able to do ~. 「話すことができる」= can speak."},
+  {q:"この仕事は私には難し（　）思います。",options:["すぎると","すぎるで","すぎてを","すぎますが"],answer:0,explanation:"〜すぎると思う = think that it's too ~. 「難しすぎると思う」= think it's too difficult."},
+  {q:"バスが来る（　）、急いで走りました。",options:["前に","後で","ながら","ために"],answer:0,explanation:"バスが来る前に = before the bus came. 「前に」for events that haven't happened yet."},
+  {q:"彼女が来る（　）まで、ここで待ちます。",options:["（なし）","ため","のに","から"],answer:0,explanation:"「〜まで待つ」= wait until ~. 「来るまで」= until she comes. No extra particle needed."},
+]},
+
+{id:"sentence-order", cat:"grammar", title:"文の組み立て", subtitle:"Find the word that goes in ★ position", count:5,
+ questions:[
+  {q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n「彼女は ＿＿ ★ ＿＿ ＿＿ 行きました。」\n【語：に ／ ピアノ ／ 習い ／ 先生の家】",options:["に","ピアノ","習い","先生の家"],answer:3,explanation:"正解：彼女は先生の家にピアノを習いに行きました。★(1番目)=先生の家。"},
+  {q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n「試験に ＿＿ ★ ＿＿ ＿＿ 勉強しています。」\n【語：ために ／ 合格する ／ 毎日 ／ 一生懸命】",options:["ために","合格する","毎日","一生懸命"],answer:1,explanation:"正解：試験に合格するために毎日一生懸命勉強しています。★(2番目)=合格する。"},
+  {q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n「この ＿＿ ＿＿ ★ ＿＿ わかりません。」\n【語：難しすぎ ／ 私には ／ て ／ 問題は】",options:["難しすぎ","私には","て","問題は"],answer:2,explanation:"正解：この問題は私には難しすぎてわかりません。★(3番目)=て。"},
+  {q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n「山田さんは ＿＿ ＿＿ ＿＿ ★ です。」\n【語：ことが ／ 上手な ／ 料理する ／ とても】",options:["ことが","上手な","料理する","とても"],answer:1,explanation:"正解：山田さんはとても料理することが上手です。★(4番目)=上手な。"},
+  {q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n「彼は ＿＿ ★ ＿＿ ＿＿ 思っています。」\n【語：たいと ／ 来年 ／ 日本に ／ 行き】",options:["たいと","来年","日本に","行き"],answer:2,explanation:"正解：彼は来年日本に行きたいと思っています。★(3番目)=日本に。"},
+]},
+
+{id:"short-reading", cat:"reading", title:"短文読解", subtitle:"Read and answer questions", count:5,
+ questions:[
+  {passage:"【お知らせ】\n当図書館は、来月一日から改装工事のため、二週間休館いたします。ご不便をおかけしますが、ご理解をよろしくお願いします。なお、返却期限を延長しますので、安心してご利用ください。",
+   q:"図書館はなぜ休館しますか？",options:["改装工事のため","祝日のため","人員不足のため","システムメンテナンスのため"],answer:0,explanation:"「改装工事のため、二週間休館」とあります。"},
+  {passage:"田中さんへ\n昨日は急にキャンセルしてごめんなさい。具合が悪くて、どうしても行けませんでした。今週の土曜日にもう一度会えませんか？午後なら空いています。\n　鈴木より",
+   q:"鈴木さんはなぜ昨日来なかったですか？",options:["具合が悪かったから","用事があったから","忘れていたから","電車が遅れたから"],answer:0,explanation:"「具合が悪くて、どうしても行けませんでした」とあります。"},
+  {passage:"明日から三日間、東京マラソンの影響で、中央通りが通行止めになります。バスのルートが変わりますので、ご注意ください。詳しくは公式サイトをご覧ください。",
+   q:"何のために中央通りが通行止めになりますか？",options:["東京マラソンのため","工事のため","イベントのため","事故のため"],answer:0,explanation:"「東京マラソンの影響で、中央通りが通行止め」とあります。"},
+  {passage:"私の趣味は料理です。週末は新しいレシピに挑戦するのが好きです。先週は友達を招待してパーティーをしました。みんな「おいしい！」と言ってくれたので、とてもうれしかったです。",
+   q:"先週、何をしましたか？",options:["友達を招待してパーティーをした","新しいレストランに行った","料理教室に参加した","料理の本を買った"],answer:0,explanation:"「友達を招待してパーティーをしました」とあります。"},
+  {passage:"【アルバイト募集】\n時給：1,100円〜\n勤務時間：週3日以上、一日4時間〜\n仕事内容：カフェでの接客・調理補助\n応募方法：電話またはメールで連絡してください。",
+   q:"このアルバイトに応募するにはどうすればいいですか？",options:["電話かメールで連絡する","直接店に行く","履歴書を送る","ウェブサイトで申し込む"],answer:0,explanation:"「電話またはメールで連絡してください」とあります。"},
+]},
+
+{id:"medium-reading", cat:"reading", title:"中文読解", subtitle:"Read a medium passage and answer", count:2,
+ questions:[
+  {passage:"日本では「おもてなし」という言葉がよく使われます。これはお客様を心を込めてもてなすという意味で、日本のサービス文化の根本にある考え方です。例えば、レストランでは注文しなくても水が出てきたり、デパートでは丁寧な言葉遣いで接客したりします。外国からの観光客もこの丁寧なサービスに驚くことが多いです。「おもてなし」は、日本文化を理解するうえで大切なキーワードの一つと言えるでしょう。",
+   q:"「おもてなし」とはどういう意味ですか？",options:["心を込めてお客様をもてなすこと","高級なサービスを提供すること","外国人向けのサービスをすること","効率的に仕事をすること"],answer:0,explanation:"「お客様を心を込めてもてなすという意味」と直接書かれています。"},
+  {passage:"近年、日本でもリモートワーク（在宅勤務）が普及しています。会社に行かずに自宅で仕事をすることで、通勤時間が減り、家族と過ごす時間が増えるというメリットがあります。一方で、同僚とのコミュニケーションが取りにくかったり、仕事とプライベートの境界線が曖昧になるというデメリットもあります。リモートワークを上手く活用するためには、自分なりのルールを作ることが大切です。",
+   q:"リモートワークのメリットとして挙げられているのはどれですか？",options:["通勤時間が減り、家族と過ごす時間が増える","同僚とのコミュニケーションがしやすくなる","仕事とプライベートの区別がはっきりする","会社の経費が節約できる"],answer:0,explanation:"「通勤時間が減り、家族と過ごす時間が増える」がメリットとして挙げられています。"},
+]},
+
+{id:"task-listening", cat:"listening", title:"課題理解", subtitle:"Read the dialogue, answer the task question", count:6,
+ questions:[
+  {passage:"【美容院で】\nお客様：「少し短くしてください。あと、カラーもお願いしたいのですが。」\n美容師：「カラーはどんな色にしますか？」\nお客様：「明るいブラウンにしてください。」\n美容師：「かしこまりました。まず髪を切って、それからカラーを入れますね。」",
+   q:"美容師はどの順番で作業しますか？",options:["髪を切ってからカラーを入れる","カラーを入れてから髪を切る","カラーのみ行う","髪を切るだけ"],answer:0,explanation:"「まず髪を切って、それからカラーを入れますね」とあります。"},
+  {passage:"【スーパーで】\n店員：「本日のポイントカードはお持ちですか？」\nお客様：「持っていません。作りたいのですが。」\n店員：「では、こちらの用紙にお名前と電話番号をご記入ください。」\nお客様：「わかりました。」",
+   q:"お客様はこれから何をしますか？",options:["用紙に名前と電話番号を書く","ポイントカードを持ってくる","別の店に行く","アプリをダウンロードする"],answer:0,explanation:"「こちらの用紙にお名前と電話番号をご記入ください」とあります。"},
+  {passage:"【旅行の相談】\nA：「沖縄旅行を考えているんですが、何月がいいですか？」\nB：「梅雨を避けたいなら、七月以降か三月ごろがいいですよ。」\nA：「八月は暑くないですか？」\nB：「暑いですが、海がきれいですよ。夏休みだから混みますけど。」",
+   q:"Bさんが梅雨を避けるなら勧めた月はどれですか？",options:["七月以降か三月ごろ","五月か六月","十二月か一月","八月のみ"],answer:0,explanation:"「梅雨を避けたいなら、七月以降か三月ごろ」と言っています。"},
+  {passage:"【コンビニで】\n店員：「温めますか？」\nお客様：「はい、お願いします。あと、袋もください。」\n店員：「袋は五円かかりますが、よろしいですか？」\nお客様：「大丈夫です。」",
+   q:"お客様は最終的に何を受け取りますか？",options:["温めた商品と袋","温めた商品のみ","袋のみ","温めない商品と袋"],answer:0,explanation:"「温める」と「袋もください」、料金OKなので、温めた商品と袋を受け取ります。"},
+  {passage:"【学校の掲示板を見ながら】\nA：「文化祭、今年は何をするの？」\nB：「うちのクラスはカフェをやることになったよ。あなたは？」\nA：「まだ決まってないんだ。お化け屋敷かゲームコーナーで迷ってる。」\nB：「お化け屋敷は準備が大変だよ。ゲームの方が楽じゃない？」",
+   q:"Bさんのクラスは文化祭で何をしますか？",options:["カフェ","お化け屋敷","ゲームコーナー","展示会"],answer:0,explanation:"「うちのクラスはカフェをやることになった」とあります。"},
+  {passage:"【電話で予約】\n客：「すし太郎ですか？今夜の七時に二名で予約したいのですが。」\n店員：「七時は満席です。七時半ならご用意できます。」\n客：「わかりました。では七時半でお願いします。名前は山田です。」",
+   q:"客は何時に何名で予約しましたか？",options:["七時半・二名","七時・二名","七時・三名","七時半・三名"],answer:0,explanation:"最終的に「七時半でお願いします」「二名」が予約内容です。"},
+]},
+
+{id:"key-point", cat:"listening", title:"ポイント理解", subtitle:"What is the key point?", count:3,
+ questions:[
+  {passage:"A：「最近、仕事で失敗が多くて…」\nB：「どんな失敗？」\nA：「書類の提出期限を間違えたり、メールの送り先を間違えたりしました。」\nB：「それは大変だったね。何か対策はした？」\nA：「はい、チェックリストを作って確認するようにしました。」",
+   q:"Aさんはどんな対策をしましたか？",options:["チェックリストを作って確認するようにした","上司に相談した","転職を考えた","メモをやめた"],answer:0,explanation:"「チェックリストを作って確認するようにしました」が対策として述べられています。"},
+  {passage:"【アナウンス】\n本日、ショッピングモール一階の非常口付近で工事があります。そのため、一階東側の駐車場への出入りが一時的に制限されます。西側の駐車場はいつも通りご利用いただけます。ご不便をおかけして申し訳ございません。",
+   q:"今日、できないことは何ですか？",options:["一階東側の駐車場に自由に出入りする","西側の駐車場を使う","一階に入る","ショッピングモールに行く"],answer:0,explanation:"「一階東側の駐車場への出入りが一時的に制限されます」とあります。"},
+  {passage:"A：「新しいスマートフォンを買おうと思ってるんだけど、どれがいいかな？」\nB：「用途によるね。写真をよく撮るなら、カメラが良いものがいいよ。バッテリーが長持ちするタイプもあるよ。」\nA：「カメラよりバッテリーが大事かな。旅行によく行くから。」",
+   q:"Aさんがスマートフォンを選ぶ上で一番大切にしていることは？",options:["バッテリーの持ちがよいこと","カメラの性能がよいこと","値段が安いこと","デザインがよいこと"],answer:0,explanation:"「カメラよりバッテリーが大事かな」とAさんが言っています。"},
+]},
+
+{id:"quick-response", cat:"listening", title:"即時応答", subtitle:"Choose the most natural reply", count:6,
+ questions:[
+  {passage:"「お待たせしました。」と言われた。",q:"どう答えるのが最も自然ですか？",options:["いいえ、大丈夫ですよ。","ありがとうございました。","お待たせしました。","お疲れ様です。"],answer:0,explanation:"「いいえ、大丈夫ですよ」または「いいえ、お気になさらず」が自然な返答です。"},
+  {passage:"「今日も一日お疲れ様でした。」と言われた。",q:"どう答えるのが最も自然ですか？",options:["お疲れ様でした。","行ってきます。","おはようございます。","いただきます。"],answer:0,explanation:"「お疲れ様でした」には「お疲れ様でした」と返すのが自然です。"},
+  {passage:"「この席、よろしいですか？」と聞かれた（席は空いている）。",q:"どう答えるのが最も自然ですか？",options:["どうぞ。","いいえ。","すみません。","ありがとうございます。"],answer:0,explanation:"空いている席を勧めるとき「どうぞ」が自然です。"},
+  {passage:"「誕生日おめでとう！」と言われた。",q:"どう答えるのが最も自然ですか？",options:["ありがとうございます！","おめでとうございます。","よろしくお願いします。","失礼します。"],answer:0,explanation:"誕生日を祝われたら「ありがとうございます」と返すのが自然です。"},
+  {passage:"「少々お待ちいただけますか？」と言われた。",q:"どう答えるのが最も自然ですか？",options:["はい、もちろんです。","いいえ、急いでいます。","ありがとうございます。","すみません。"],answer:0,explanation:"「少々お待ちください」と言われたら「はい、もちろんです」または「はい、どうぞ」が自然です。"},
+  {passage:"「ご注文はお決まりですか？」とウエイターに聞かれた（まだ決まっていない）。",q:"どう答えるのが最も自然ですか？",options:["もう少し待ってください。","はい、お願いします。","いりません。","ありがとうございます。"],answer:0,explanation:"「もう少し待ってください」または「もう少々お時間をください」が自然です。"},
+]},
+];
+
+// ════════════════════════════════════════════
+//  APP STATE
+// ════════════════════════════════════════════
+let activeDrillId = null;
+let drillQuestions = [];
+let drillIdx = 0;
+let drillAnswers = [];
+
+// Theme
+document.getElementById("themeBtn").onclick = () => {
+  const t = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",t);
+  document.documentElement.classList.toggle("light-mode",t==="light");
+  localStorage.setItem("n4.theme",t);
+  document.getElementById("themeBtn").textContent = t==="dark"?"☀":"🌙";
+};
+(()=>{const t=localStorage.getItem("n4.theme")||"dark";document.getElementById("themeBtn").textContent=t==="dark"?"☀":"🌙";})();
+
+// Build drill grid
+function buildGrid(cat) {
+  const grid = document.getElementById("drillGrid");
+  grid.innerHTML = DRILLS.map(d => {
+    const hidden = cat !== "all" && d.cat !== cat;
+    return `<div class="drill-card" onclick="startDrill('${d.id}')" data-cat="${d.cat}" ${hidden?'data-hidden="true"':''} style="${hidden?'display:none':''}">
+      <div class="dc-cat ${d.cat}">${d.cat.toUpperCase()} · ${["vocab","grammar","reading","listening"].includes(d.cat)?{vocab:"語彙",grammar:"文法",reading:"読解",listening:"聴解"}[d.cat]:d.cat}</div>
+      <div class="dc-title jp">${d.title}</div>
+      <div class="dc-subtitle">${d.subtitle}</div>
+      <div class="dc-meta">
+        <span class="dc-q">📝 ${d.count} questions</span>
+        <span class="dc-q">⚡ 10 per drill</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+buildGrid("all");
+
+window.filterDrills = function(cat) {
+  document.querySelectorAll(".filter-tab").forEach(t=>t.classList.remove("active"));
+  event.target.classList.add("active");
+  document.querySelectorAll(".drill-card").forEach(c=>{
+    const show = cat==="all" || c.dataset.cat===cat;
+    c.style.display = show?"":"none";
+  });
+};
+
+// Start drill
+window.startDrill = function(id) {
+  const drill = DRILLS.find(d=>d.id===id);
+  if(!drill) return;
+  activeDrillId = id;
+  // Shuffle and pick 10
+  const shuffled = [...drill.questions].sort(()=>Math.random()-.5).slice(0,10);
+  drillQuestions = shuffled;
+  drillIdx = 0;
+  drillAnswers = new Array(drillQuestions.length).fill(-1);
+
+  document.getElementById("landingPage").style.display = "none";
+  const ds = document.getElementById("drillScreen");
+  ds.className = "drill-screen active";
+  document.getElementById("drillTitle").textContent = drill.title;
+  renderDrillQ();
+};
+
+window.backToLanding = function() {
+  document.getElementById("drillScreen").className = "drill-screen";
+  document.getElementById("landingPage").style.display = "";
+};
+
+function renderDrillQ() {
+  const q = drillQuestions[drillIdx];
+  const total = drillQuestions.length;
+  document.getElementById("drillSubtitle").textContent = `Question ${drillIdx+1} of ${total}`;
+  document.getElementById("drillProgFill").style.width = (drillIdx/total*100)+"%";
+
+  const passageHtml = q.passage
+    ? `<div class="passage-box"><span class="passage-label">📄 文章・状況</span>${q.passage}</div>`
+    : "";
+
+  const optsHtml = q.options.map((opt,i) =>
+    `<button class="opt-btn" onclick="chooseDrillAnswer(${i})">
+      <span class="num">${["A","B","C","D"][i]}</span> ${opt}
+    </button>`
+  ).join("");
+
+  document.getElementById("drillBody").innerHTML = `
+    <div class="q-card">
+      <div class="qtype-badge">${DRILLS.find(d=>d.id===activeDrillId)?.title||""}</div>
+      ${passageHtml}
+      <div class="q-text jp">${(q.q||"").replace(/\n/g,"<br>")}</div>
+      <div class="opts" id="drillOpts">${optsHtml}</div>
+      <div class="explain-box" id="drillExplain"></div>
+    </div>
+    <button class="next-btn" id="drillNextBtn" onclick="drillNext()">${drillIdx===total-1?"Finish Drill":"Next →"}</button>
+  `;
+}
+
+window.chooseDrillAnswer = function(i) {
+  if(drillAnswers[drillIdx] !== -1) return;
+  drillAnswers[drillIdx] = i;
+  const q = drillQuestions[drillIdx];
+  const opts = document.querySelectorAll(".opt-btn");
+  opts.forEach((b,idx) => {
+    b.disabled = true;
+    if(idx === q.answer) b.classList.add("correct");
+    else if(idx === i) b.classList.add("wrong");
+  });
+  const ok = i === q.answer;
+  const ex = document.getElementById("drillExplain");
+  ex.className = `explain-box show ${ok?"ok":"bad"}`;
+  ex.innerHTML = `<span class="fb-label">${ok?"✓ 正解！":"✗ 不正解 — 正解は「"+q.options[q.answer]+"」"}</span>${q.explanation}`;
+  document.getElementById("drillNextBtn").classList.add("show");
+};
+
+window.drillNext = function() {
+  if(drillIdx < drillQuestions.length - 1) {
+    drillIdx++;
+    renderDrillQ();
+  } else {
+    showDrillSummary();
+  }
+};
+
+function showDrillSummary() {
+  const total = drillQuestions.length;
+  const correct = drillAnswers.filter((a,i)=>a===drillQuestions[i].answer).length;
+  const pct = Math.round(correct/total*100);
+  const scoreClass = pct===100?"all":pct>=70?"good":pct>=50?"ok":"low";
+  const dots = drillQuestions.map((_,i)=>{
+    const hit = drillAnswers[i]===drillQuestions[i].answer;
+    return `<div class="s-dot ${hit?"hit":"miss"}"></div>`;
+  }).join("");
+  document.getElementById("drillSubtitle").textContent = "Complete!";
+  document.getElementById("drillProgFill").style.width="100%";
+  document.getElementById("drillBody").innerHTML = `
+    <div class="summary-card">
+      <div class="summary-label">Drill Complete! 🎯</div>
+      <div class="summary-score ${scoreClass}">${correct}/${total}</div>
+      <div class="summary-label">${pct}% correct</div>
+      <div class="streak-dots">${dots}</div>
+      <div class="summary-actions">
+        <button class="sum-btn primary" onclick="startDrill('${activeDrillId}')">↺ Replay</button>
+        <button class="sum-btn indigo-btn" onclick="backToLanding()">← Choose Another</button>
+        <a class="sum-btn" href="n4-mock-test.html" style="text-align:center">📋 Take Mock Test</a>
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

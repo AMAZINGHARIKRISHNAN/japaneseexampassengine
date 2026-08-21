@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>N4 Mock Test — 日本語N4</title>
+<style>
+:root{
+  --bg:#12131a;--bg2:#0d0e14;--surface:#1b1d28;--surface2:#222533;
+  --line:#2e3242;--ink:#ece8df;--ink-dim:#a6a8b6;--ink-faint:#8a8d9e;
+  --jade:#5fc28a;--jade-dim:#2c6347;--jade-bg:#16241c;
+  --vermilion:#e2553f;--verm-dim:#5c2a23;--verm-bg:#2a1413;
+  --gold:#d8af52;--gold-bg:#2a2410;--gold-dim:#5a4a20;
+  --indigo:#7c8cf0;--indigo-dim:#363c6e;--indigo-bg:#1a1d35;
+  --rose:#e07ba1;--fail-text:#f08080;--hdr-bg:#0d0e14ee;
+  --radius:14px;
+  --jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","Meiryo","Noto Sans JP",sans-serif;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f5f4f0;--bg2:#eae8e2;--surface:#ffffff;--surface2:#f0ede7;
+  --line:#d4d0c8;--ink:#1c1d26;--ink-dim:#525468;--ink-faint:#888a9a;
+  --jade:#1a7040;--jade-dim:#a8dfc0;--jade-bg:#eaf7f0;
+  --vermilion:#c03020;--verm-dim:#f5c5be;--verm-bg:#fdf0ee;
+  --gold:#8a6610;--gold-bg:#fdf4e0;--gold-dim:#d4aa44;
+  --indigo:#3d50d8;--indigo-dim:#c8cef8;--indigo-bg:#eef0fd;
+  --rose:#b04570;--fail-text:#c03020;--hdr-bg:#f5f4f0ee;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);min-height:100vh;padding-top:58px;line-height:1.6}
+button{font-family:inherit;cursor:pointer;color:var(--ink)}
+a{color:var(--indigo);text-decoration:none}
+.jp{font-family:var(--jp)}
+
+/* Header */
+header{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:var(--hdr-bg);border-bottom:1px solid var(--line);backdrop-filter:blur(10px);display:flex;align-items:center;gap:14px;padding:0 20px}
+.hdr-brand{font-family:var(--jp);font-size:20px;font-weight:800;color:var(--vermilion);text-decoration:none}
+.hdr-title{font-size:14px;color:var(--ink-dim);font-weight:500}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-back{font-size:13px;color:var(--ink-dim);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:5px 11px;background:var(--surface)}
+.hdr-back:hover{color:var(--ink);border-color:var(--ink-faint)}
+.theme-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;width:34px;height:34px;display:grid;place-items:center;font-size:15px;color:var(--ink)}
+.theme-btn:hover{border-color:var(--ink-faint)}
+
+/* Layout */
+.page{max-width:780px;margin:0 auto;padding:28px 20px 80px}
+
+/* Landing */
+.hero-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:20px}
+.hero-badge{font-size:11px;color:var(--vermilion);background:var(--verm-bg);border:1px solid var(--verm-dim);border-radius:20px;padding:3px 12px;display:inline-block;margin-bottom:14px;font-weight:700;letter-spacing:.5px}
+.hero-card h1{font-size:clamp(22px,4vw,30px);font-weight:800;margin-bottom:8px}
+.hero-card h1 .jp{color:var(--vermilion)}
+.hero-card p{color:var(--ink-dim);font-size:14.5px;max-width:58ch}
+.section-pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.spill{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px}
+.spill .label{color:var(--ink-dim);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+.spill .val{font-weight:700;color:var(--ink)}
+.spill .sub{font-size:11px;color:var(--ink-faint)}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.mode-card{background:var(--surface2);border:2px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .18s,background .18s}
+.mode-card:hover{border-color:var(--ink-faint)}
+.mode-card.selected{border-color:var(--indigo);background:var(--indigo-bg)}
+.mode-card h3{font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.mode-card p{font-size:13px;color:var(--ink-dim);line-height:1.5}
+
+.start-btn{width:100%;padding:15px;background:var(--jade-bg);border:2px solid var(--jade);border-radius:12px;color:var(--jade);font-size:16px;font-weight:700;transition:filter .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.start-btn:hover{filter:brightness(1.12)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Test screen */
+.test-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.section-tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--indigo-bg);border:1px solid var(--indigo-dim);color:var(--indigo)}
+.section-tag.vocab{background:var(--jade-bg);border-color:var(--jade-dim);color:var(--jade)}
+.section-tag.grammar{background:var(--indigo-bg);border-color:var(--indigo-dim);color:var(--indigo)}
+.section-tag.listening{background:var(--gold-bg);border-color:var(--gold-dim);color:var(--gold)}
+.q-count{font-size:14px;color:var(--ink-dim)}
+.timer-display{margin-left:auto;font-size:18px;font-weight:700;color:var(--vermilion);font-variant-numeric:tabular-nums;letter-spacing:1px}
+.timer-display.warn{color:var(--gold)}
+.timer-display.urgent{color:var(--vermilion);animation:pulse .8s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.5}}
+
+.progress-bar{height:5px;background:var(--surface2);border-radius:20px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--jade),var(--indigo));transition:width .3s;border-radius:20px}
+
+.q-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
+.q-type-badge{font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:600}
+.passage-box{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px;font-family:var(--jp);font-size:16px;line-height:2;color:var(--ink)}
+.passage-box .passage-label{font-family:var(--ui);font-size:10.5px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700;display:block}
+.q-text{font-family:var(--jp);font-size:17px;line-height:1.8;margin-bottom:16px;color:var(--ink)}
+.q-text .underline{text-decoration:underline;text-underline-offset:3px}
+.q-sub{font-family:var(--ui);font-size:12.5px;color:var(--ink-faint);margin-top:4px;margin-bottom:12px;display:block}
+.word-list{font-family:var(--jp);font-size:14px;color:var(--ink-dim);background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:14px}
+
+.opts{display:grid;gap:8px}
+.opt-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;background:var(--surface2);border:2px solid var(--line);border-radius:11px;text-align:left;font-size:15px;color:var(--ink);transition:border-color .15s,background .15s}
+.opt-btn:hover:not(:disabled){border-color:var(--ink-faint);background:var(--bg2)}
+.opt-btn .num{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink-faint);flex-shrink:0}
+.opt-btn .jp{font-family:var(--jp)}
+.opt-btn.selected{border-color:var(--indigo);background:var(--indigo-bg)}
+.opt-btn.selected .num{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-bg)}
+.opt-btn.correct{border-color:var(--jade)!important;background:var(--jade-bg)!important}
+.opt-btn.correct .num{border-color:var(--jade)!important;color:var(--jade)!important}
+.opt-btn.wrong{border-color:var(--vermilion)!important;background:var(--verm-bg)!important}
+.opt-btn.wrong .num{border-color:var(--vermilion)!important;color:var(--vermilion)!important}
+.opt-btn:disabled{cursor:default}
+
+.explain-box{margin-top:12px;padding:12px 14px;background:var(--jade-bg);border:1px solid var(--jade-dim);border-radius:10px;font-size:13.5px;color:var(--ink-dim);line-height:1.6;display:none}
+.explain-box.show{display:block}
+.explain-box .correct-lbl{color:var(--jade);font-weight:700;margin-bottom:4px;display:block}
+.explain-box.wrong-fb{background:var(--verm-bg);border-color:var(--verm-dim)}
+
+.nav-row{display:flex;gap:10px;margin-top:16px}
+.nav-btn{flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);font-size:14px;font-weight:600;color:var(--ink);transition:border-color .15s}
+.nav-btn:hover{border-color:var(--ink-faint)}
+.nav-btn.primary{background:var(--jade-bg);border-color:var(--jade);color:var(--jade)}
+.nav-btn.primary:hover{filter:brightness(1.1)}
+.nav-btn.warn-btn{background:var(--verm-bg);border-color:var(--vermilion);color:var(--vermilion)}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+
+.section-end{text-align:center;padding:40px 20px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.section-end h2{font-size:22px;margin-bottom:10px}
+.section-end p{color:var(--ink-dim);margin-bottom:20px}
+.sec-score-preview{font-size:28px;font-weight:800;margin:14px 0}
+
+/* Results */
+.result-hero{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;text-align:center;margin-bottom:20px}
+.result-hero .score-big{font-size:64px;font-weight:900;line-height:1;margin:10px 0}
+.result-hero .score-big.pass{color:var(--jade)}
+.result-hero .score-big.fail{color:var(--vermilion)}
+.result-hero .score-label{font-size:14px;color:var(--ink-dim)}
+.result-hero .verdict{font-size:18px;font-weight:700;margin:10px 0;padding:8px 20px;border-radius:20px;display:inline-block}
+.verdict.pass{background:var(--jade-bg);color:var(--jade);border:1px solid var(--jade-dim)}
+.verdict.fail{background:var(--verm-bg);color:var(--vermilion);border:1px solid var(--verm-dim)}
+
+.section-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:560px){.section-cards{grid-template-columns:1fr}}
+.sec-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.sec-card .sec-name{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-faint);margin-bottom:6px;font-weight:600}
+.sec-card .sec-score{font-size:28px;font-weight:800;margin-bottom:4px}
+.sec-card .sec-out{font-size:13px;color:var(--ink-dim)}
+.sec-card .sec-bar{height:6px;background:var(--surface2);border-radius:10px;margin-top:10px;overflow:hidden}
+.sec-card .sec-bar i{display:block;height:100%;border-radius:10px;transition:width .6s}
+.sec-card.pass-sec .sec-score{color:var(--jade)}
+.sec-card.pass-sec .sec-bar i{background:var(--jade)}
+.sec-card.fail-sec .sec-score{color:var(--vermilion)}
+.sec-card.fail-sec .sec-bar i{background:var(--vermilion)}
+
+.review-section{background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:20px;overflow:hidden}
+.review-section h3{padding:14px 18px;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink-dim)}
+.review-item{padding:14px 18px;border-bottom:1px solid var(--line)}
+.review-item:last-child{border:none}
+.review-item .ri-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.review-item .ri-num{font-size:11px;color:var(--ink-faint);min-width:28px}
+.ri-status{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0}
+.ri-status.ok{background:var(--jade-bg);color:var(--jade)}
+.ri-status.bad{background:var(--verm-bg);color:var(--vermilion)}
+.review-item .q-text-small{font-family:var(--jp);font-size:15px;color:var(--ink);flex:1}
+.review-item .ans-row{display:flex;gap:10px;font-size:13px;margin-top:4px;flex-wrap:wrap}
+.review-item .ans-correct{color:var(--jade);font-family:var(--jp)}
+.review-item .ans-wrong{color:var(--vermilion);font-family:var(--jp);text-decoration:line-through}
+.review-item .exp{font-size:13px;color:var(--ink-dim);margin-top:5px;line-height:1.5}
+
+.history-section{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:20px}
+.history-section h3{padding:14px 18px;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink-dim)}
+table.hist{width:100%;border-collapse:collapse;font-size:13px}
+table.hist th{padding:9px 12px;text-align:left;background:var(--surface2);color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+table.hist td{padding:9px 12px;border-top:1px solid var(--line);color:var(--ink)}
+table.hist td .jp{font-family:var(--jp)}
+.chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block}
+.chip.pass{background:var(--jade-bg);color:var(--jade);border:1px solid var(--jade-dim)}
+.chip.fail{background:var(--verm-bg);color:var(--vermilion);border:1px solid var(--verm-dim)}
+.chip.exam{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-dim)}
+.chip.practice{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-dim)}
+
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.result-actions a,.result-actions button{flex:1;min-width:160px;padding:12px;text-align:center;border-radius:12px;font-size:14px;font-weight:600;color:var(--ink);border:1px solid var(--line);background:var(--surface2);text-decoration:none;display:block}
+.result-actions .primary-link{background:var(--jade-bg);border-color:var(--jade);color:var(--jade)}
+.result-actions .indigo-link{background:var(--indigo-bg);border-color:var(--indigo);color:var(--indigo)}
+
+/* Section transition */
+.sec-transition{text-align:center;padding:36px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.sec-transition h2{font-size:24px;margin-bottom:10px}
+.sec-transition p{color:var(--ink-dim);margin-bottom:20px;font-size:14px}
+
+@media(max-width:600px){
+  .mode-grid{grid-template-columns:1fr}
+  header{padding:0 14px}
+  .page{padding:20px 14px 60px}
+}
+</style>
+</head>
+<body>
+<script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
+<script>
+// Auth guard
+(function(){
+  function v(k){
+    try{ return JSON.parse(sessionStorage.getItem(k)||"null")?.verified===true; }
+    catch{ return false; }
+  }
+  if(!v("n3_user_session")&&!v("n3_admin_verified")){location.replace("login.html");}
+})();
+</script>
+
+<header>
+  <a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
+  <span class="hdr-title">Mock Test</span>
+  <div class="hdr-right">
+    <a class="hdr-back" href="n4-pass-engine.html">← Pass Engine</a>
+    <a class="hdr-back" href="dashboard.html" title="Dashboard">🏠</a>
+    <a class="hdr-back" href="n3-pass-engine.html" title="Switch to N3">⇄ N3</a>
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">☀</button>
+  </div>
+</header>
+
+<div class="page">
+  <!-- LANDING -->
+  <div id="screen-landing">
+    <div class="hero-card">
+      <div class="hero-badge">JLPT N4 形式</div>
+      <h1>Full N4 Mock Test<br><span class="jp">模擬試験</span></h1>
+      <p>115 questions · 115 minutes · Scaled to 180 points. Pass requires ≥ 90 total and ≥ 19/60 in each section.</p>
+      <div class="section-pills">
+        <div class="spill"><div class="label">Section 1</div><div class="val jp">語彙</div><div class="sub">25 q · 25 min</div></div>
+        <div class="spill"><div class="label">Section 2</div><div class="val jp">文法・読解</div><div class="sub">55 q · 55 min</div></div>
+        <div class="spill"><div class="label">Section 3</div><div class="val jp">聴解</div><div class="sub">35 q · 35 min</div></div>
+        <div class="spill"><div class="label">Total</div><div class="val">180 pts</div><div class="sub">Pass: 90 / each ≥19</div></div>
+      </div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card selected" id="modeExam" onclick="selectMode('exam')">
+        <h3>⏱ Exam Mode</h3>
+        <p>Section countdown timers active. No feedback until end. Mirrors real JLPT conditions.</p>
+      </div>
+      <div class="mode-card" id="modePractice" onclick="selectMode('practice')">
+        <h3>📖 Practice Mode</h3>
+        <p>Instant green/red feedback with explanation after each answer. No time pressure.</p>
+      </div>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startTest()">
+      ▶ Start Test — 115 Questions
+    </button>
+  </div>
+
+  <!-- TEST -->
+  <div id="screen-test" hidden>
+    <div class="test-header">
+      <span class="section-tag" id="sectionTag">語彙</span>
+      <span class="q-count" id="qCount">Question 1 of 25</span>
+      <span class="timer-display" id="timerDisplay">25:00</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div id="questionArea"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results" hidden>
+    <div class="result-hero">
+      <div class="score-label">Total Score</div>
+      <div class="score-big" id="totalScore">0</div>
+      <div class="score-label">out of 180</div>
+      <div class="verdict" id="verdict">FAIL</div>
+      <div style="color:var(--ink-faint);font-size:13px;margin-top:8px" id="modeChipResult"></div>
+    </div>
+    <div class="section-cards" id="sectionCards"></div>
+    <div class="result-actions">
+      <button class="primary-link" onclick="retakeTest()">↺ Retake Test</button>
+      <a class="indigo-link" href="n4-stats.html">📊 My Stats</a>
+      <a class="primary-link" href="n4-boost.html" style="background:var(--gold-bg);border-color:var(--gold);color:var(--gold)">⚡ Quick Drills</a>
+    </div>
+    <div class="history-section">
+      <h3>📋 Last 5 Attempts</h3>
+      <div id="historyTable"><p style="padding:16px 18px;color:var(--ink-faint);font-size:13px">No history yet.</p></div>
+    </div>
+    <div class="review-section" id="reviewSection">
+      <h3>📝 Answer Review</h3>
+      <div id="reviewItems"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import {getFirestore,collection,addDoc,getDocs,orderBy,query,limit,serverTimestamp}
+  from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import {getAuth,onAuthStateChanged}
+  from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+
+const FB = initializeApp({
+  apiKey:"AIzaSyCDfc2n8sJfesrIwbWluTmjTnTsl_x46SQ",
+  authDomain:"japanesen3passengine.firebaseapp.com",
+  projectId:"japanesen3passengine"
+});
+const db = getFirestore(FB);
+const auth = getAuth(FB);
+// Resolves with the signed-in user (or null); rules deny access without it.
+const authReady = new Promise(res=>{const stop=onAuthStateChanged(auth,u=>{stop();res(u);});});
+
+function getUsername(){
+  try{return JSON.parse(sessionStorage.getItem("n3_user_session")).username;}catch(e){return "guest";}
+}
+
+// ══════════════════════════════════════════════
+//  QUESTION DATA — 115 questions total
+// ══════════════════════════════════════════════
+const SECTIONS = [
+{
+  id:"vocab", title:"語彙", titleEn:"Vocabulary", timeMin:25,
+  questions:[
+    // --- 漢字読み (1-5) ---
+    {type:"漢字読み",q:"「病院で医者に診てもらった。」\n「病院」の読み方は？",
+     options:["びょういん","びょうかん","びょうえん","いんびょう"],answer:0,
+     explanation:"病院（びょういん）= hospital。病（びょう・やまい）＋院（いん）。"},
+    {type:"漢字読み",q:"「毎朝、新聞を読む習慣がある。」\n「新聞」の読み方は？",
+     options:["しんぶん","しんもん","しんぼん","にっぽん"],answer:0,
+     explanation:"新聞（しんぶん）= newspaper。新（しん）＋聞（ぶん）。"},
+    {type:"漢字読み",q:"「図書館で本を三冊借りた。」\n「図書館」の読み方は？",
+     options:["としょかん","ずしょかん","としょうかん","ずしょくかん"],answer:0,
+     explanation:"図書館（としょかん）= library。図（と）書（しょ）館（かん）。"},
+    {type:"漢字読み",q:"「来週、家族と旅行に行く予定です。」\n「旅行」の読み方は？",
+     options:["りょこう","りょうこう","りょっこう","たびこう"],answer:0,
+     explanation:"旅行（りょこう）= travel。旅（りょ）＋行（こう）。"},
+    {type:"漢字読み",q:"「駅まで歩いて十五分かかります。」\n「歩いて」の読み方は？",
+     options:["あるいて","はしって","つかって","はたらいて"],answer:0,
+     explanation:"歩く（あるく）→歩いて。walk。"},
+    // --- 表記 (6-10) ---
+    {type:"表記",q:"「まいにち、にほんごを べんきょうします。」\n「べんきょう」を漢字で書くと？",
+     options:["勉強","文強","便教","勉教"],answer:0,
+     explanation:"勉強（べんきょう）= study。勉（べん）＋強（きょう）。"},
+    {type:"表記",q:"「かいぎは午後三時からです。」\n「かいぎ」を漢字で書くと？",
+     options:["会議","会技","会記","外議"],answer:0,
+     explanation:"会議（かいぎ）= meeting。会（かい）＋議（ぎ）。"},
+    {type:"表記",q:"「このりょうりはおいしいですね。」\n「りょうり」を漢字で書くと？",
+     options:["料理","良理","量理","料里"],answer:0,
+     explanation:"料理（りょうり）= cooking/cuisine。"},
+    {type:"表記",q:"「ともだちとえいがをみました。」\n「えいが」を漢字で書くと？",
+     options:["映画","映歌","映賀","影画"],answer:0,
+     explanation:"映画（えいが）= movie/film。映（えい）＋画（が）。"},
+    {type:"表記",q:"「でんしゃで会社に通っています。」\n「でんしゃ」を漢字で書くと？",
+     options:["電車","電社","電者","点車"],answer:0,
+     explanation:"電車（でんしゃ）= train。電（でん）＋車（しゃ）。"},
+    // --- 文脈規定 (11-15) ---
+    {type:"文脈規定",q:"試験に合格する（　）、毎日勉強しています。",
+     options:["ために","なのに","ながら","だから"],answer:0,
+     explanation:"ために = in order to（目的）。「合格するために勉強する」= study in order to pass."},
+    {type:"文脈規定",q:"荷物が（　）ので、タクシーに乗りました。",
+     options:["重い","薄い","細い","速い"],answer:0,
+     explanation:"重い（おもい）= heavy。荷物が重い = the luggage is heavy, so I took a taxi."},
+    {type:"文脈規定",q:"彼女はいつも（　）に仕事をするので、みんなに信頼されています。",
+     options:["丁寧","急","不便","暇"],answer:0,
+     explanation:"丁寧（ていねい）= careful, polite. 丁寧に仕事をする = work carefully."},
+    {type:"文脈規定",q:"電車が（　）ので、今日の会議に遅刻してしまいました。",
+     options:["遅れた","始まった","集まった","決まった"],answer:0,
+     explanation:"遅れる（おくれる）= to be late/delayed. 電車が遅れた = the train was delayed."},
+    {type:"文脈規定",q:"熱があって体が（　）から、今日は学校を休みます。",
+     options:["だるい","楽しい","うれしい","涼しい"],answer:0,
+     explanation:"だるい = sluggish, heavy feeling when sick（怠い）. Natural when having a fever."},
+    // --- 言い換え (16-20) ---
+    {type:"言い換え",q:"「彼は約束を必ず守る人です。」\nに最も意味が近いのは？",
+     options:["彼は約束したことを必ずする人です","彼は約束をよく作る人です","彼は約束が大好きな人です","彼は約束を覚えている人です"],answer:0,
+     explanation:"約束を守る = to keep a promise. 「約束したことを必ずする」= always does what was promised."},
+    {type:"言い換え",q:"「その問題はとても難しかった。」\nに最も意味が近いのは？",
+     options:["その問題はなかなか解けなかった","その問題は長かった","その問題は新しかった","その問題は面白かった"],answer:0,
+     explanation:"難しい ≈ なかなか解けない（could not easily be solved）. Both express difficulty."},
+    {type:"言い換え",q:"「仕事がやっと終わった。」\nに最も意味が近いのは？",
+     options:["長い間かかったが、仕事が完了した","仕事が簡単に終わった","仕事をやめた","仕事が始まった"],answer:0,
+     explanation:"やっと = finally, at last（after effort/time）. Implies it took a long time."},
+    {type:"言い換え",q:"「彼はすぐに感情的になる。」\nに最も意味が近いのは？",
+     options:["彼は感情のコントロールが苦手だ","彼はいつも元気だ","彼は人と話すのが得意だ","彼はとても優しい人だ"],answer:0,
+     explanation:"感情的になる = to become emotional. Unable to control one's emotions."},
+    {type:"言い換え",q:"「この本はわかりやすい。」\nに最も意味が近いのは？",
+     options:["この本は理解しやすい","この本は読むのが早い","この本は短い","この本は面白い"],answer:0,
+     explanation:"わかりやすい = easy to understand = 理解しやすい（りかいしやすい）."},
+    // --- 用法 (21-25) ---
+    {type:"用法",q:"「経験」の正しい使い方はどれですか？",
+     options:["海外で働いた経験があります","彼は経験がとても高いです","この映画は経験がいいです","今日は経験がいい天気です"],answer:0,
+     explanation:"経験（けいけん）= experience. 「〜の経験がある」is the correct pattern."},
+    {type:"用法",q:"「連絡」の正しい使い方はどれですか？",
+     options:["後で連絡します","彼は連絡がとても速いです","連絡がとても美しいです","連絡を飲みました"],answer:0,
+     explanation:"連絡する（れんらくする）= to contact. 「後で連絡します」= I'll contact you later."},
+    {type:"用法",q:"「説明」の正しい使い方はどれですか？",
+     options:["先生が丁寧に説明してくれた","彼女は説明がかっこいいです","今日の天気は説明です","説明は甘いです"],answer:0,
+     explanation:"説明する（せつめいする）= to explain. 「丁寧に説明する」= explain carefully."},
+    {type:"用法",q:"「安全」の正しい使い方はどれですか？",
+     options:["この交差点は安全ではない","彼は安全においしく食べました","今日のテストは安全でした","安全な映画でした"],answer:0,
+     explanation:"安全（あんぜん）= safe/safety. Used to describe places, situations. 「安全ではない」= not safe."},
+    {type:"用法",q:"「失敗」の正しい使い方はどれですか？",
+     options:["料理に失敗してしまいました","試験が失敗に見えます","彼の声は失敗です","失敗を飲みました"],answer:0,
+     explanation:"失敗する（しっぱいする）= to fail/make a mistake. 「〜に失敗する」= fail at something."},
+  ]
+},
+{
+  id:"grammar", title:"文法・読解", titleEn:"Grammar & Reading", timeMin:55,
+  questions:[
+    // --- 文法選択 (1-20) ---
+    {type:"文法選択",q:"毎朝ジョギングする（　）、健康になりました。",
+     options:["ことで","するから","してから","すれば"],answer:0,
+     explanation:"〜することで = by doing 〜. ジョギングすることで健康になる = became healthy by jogging."},
+    {type:"文法選択",q:"彼は来年、日本に行く（　）です。",
+     options:["つもり","はず","わけ","こと"],answer:0,
+     explanation:"つもり = intention. 「〜するつもりだ」= I intend to do ~. はず = expectation based on logic."},
+    {type:"文法選択",q:"もっと練習すれば、もっとうまく（　）でしょう。",
+     options:["なれる","なった","なっている","なる"],answer:0,
+     explanation:"なれる = potential form of なる（to become）. If you practice more, you'll be able to become better."},
+    {type:"文法選択",q:"田中さんはまだ来て（　）。",
+     options:["いません","ありません","みません","おきません"],answer:0,
+     explanation:"〜ていない = has not done yet. 「来ていません」= has not come yet."},
+    {type:"文法選択",q:"この映画は（　）見たことがあります。",
+     options:["以前","これから","もうすぐ","すぐ"],answer:0,
+     explanation:"以前（いぜん）= previously/before. 「以前見たことがある」= have seen it before."},
+    {type:"文法選択",q:"日本語が上手（　）なりたいです。",
+     options:["に","が","で","を"],answer:0,
+     explanation:"うまくなる / 上手になる requires particle 「に」. Adjective-stem + になる = to become ~."},
+    {type:"文法選択",q:"彼女は料理（　）とても上手です。",
+     options:["が","は","を","に"],answer:0,
+     explanation:"〜が上手です is the fixed pattern. 「料理が上手」= good at cooking. Not を or に."},
+    {type:"文法選択",q:"この問題は難しすぎ（　）わかりません。",
+     options:["て","に","が","を"],answer:0,
+     explanation:"〜すぎて = too ~ (so that…). 難しすぎて = too difficult (so I can't understand it)."},
+    {type:"文法選択",q:"先生に相談した（　）がいいと思います。",
+     options:["ほう","こと","もの","ため"],answer:0,
+     explanation:"〜したほうがいい = it's better to do ~. Advice pattern in Japanese."},
+    {type:"文法選択",q:"バスが来る（　）に、傘を持って出かけました。",
+     options:["前","後","ため","から"],answer:0,
+     explanation:"〜前に = before doing ~. 「バスが来る前に出かけた」= left before the bus came."},
+    {type:"文法選択",q:"子供の（　）から、ピアノを習っています。",
+     options:["ころ","まえ","あいだ","ため"],answer:0,
+     explanation:"子供のころ = when one was a child. 「ころ」is used for an approximate period of time."},
+    {type:"文法選択",q:"薬を飲ん（　）、早く寝てください。",
+     options:["で","から","ながら","のに"],answer:0,
+     explanation:"〜て (te-form) connecting sequence. 薬を飲んで寝る = take medicine and then sleep."},
+    {type:"文法選択",q:"雨が降って（　）、運動会が中止になった。",
+     options:["しまった","いた","みた","おいた"],answer:0,
+     explanation:"〜てしまった = unfortunately it happened / completed with regret. 降ってしまった = it rained (unfortunately)."},
+    {type:"文法選択",q:"あの人が田中さんだ（　）知りませんでした。",
+     options:["とは","では","とも","での"],answer:0,
+     explanation:"〜とは知らなかった = didn't know that ~. 「とは」marks surprising/unexpected information."},
+    {type:"文法選択",q:"もし明日雨が降っ（　）、試合は中止です。",
+     options:["たら","ても","ては","ながら"],answer:0,
+     explanation:"〜たら = if/when (conditional). 「雨が降ったら」= if it rains tomorrow."},
+    {type:"文法選択",q:"彼は優しい（　）でなく、頭もいい。",
+     options:["だけ","しか","ばかり","ほど"],answer:0,
+     explanation:"〜だけでなく = not only ~. 「優しいだけでなく、頭もいい」= not only kind, but also smart."},
+    {type:"文法選択",q:"授業中は携帯電話を使わ（　）ください。",
+     options:["ないで","なくて","ずに","なければ"],answer:0,
+     explanation:"〜ないでください = please don't do ~. Polite request/prohibition. 使わないでください."},
+    {type:"文法選択",q:"この機械の使い方を教え（　）もらえますか？",
+     options:["て","に","が","で"],answer:0,
+     explanation:"〜てもらう = to have someone do ~ for you. 「教えてもらう」= have someone teach me."},
+    {type:"文法選択",q:"荷物が重く（　）、肩が痛くなりました。",
+     options:["て","に","が","の"],answer:0,
+     explanation:"い-adjective + て connects reason/sequence. 重くて = (because it was) heavy."},
+    {type:"文法選択",q:"日本に来て、まだ三ヶ月（　）経っていない。",
+     options:["しか","だけ","ほど","ばかり"],answer:0,
+     explanation:"〜しか〜ない = only ~（not more than）. 「三ヶ月しか経っていない」= only 3 months have passed."},
+    // --- 文の組み立て (21-30) ---
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n先生は ＿＿ ★ ＿＿ ＿＿ おっしゃいました。\n【語：明日は ／ ように ／ 授業に来ない ／ すること】",
+     options:["明日は","ように","授業に来ない","すること"],answer:2,
+     explanation:"正解の文：先生は「明日は授業に来ないようにすること」とおっしゃいました。★の位置(3番目)＝授業に来ない。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n私は ＿＿ ★ ＿＿ ＿＿ と思っています。\n【語：行き ／ 来年 ／ ぜひ ／ たい】",
+     options:["行き","来年","ぜひ","たい"],answer:1,
+     explanation:"正解：私はぜひ来年行きたいと思っています。★(2番目)＝来年。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n彼女は ＿＿ ＿＿ ★ ＿＿ してもらいました。\n【語：先生 ／ に ／ ピアノを ／ 教え】",
+     options:["先生","に","ピアノを","教え"],answer:2,
+     explanation:"正解：彼女は先生にピアノを教えてもらいました。★(3番目)＝ピアノを。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n彼は ＿＿ ＿＿ ★ ＿＿ ようです。\n【語：あまり ／ 好きで ／ ない ／ 仕事が】",
+     options:["あまり","好きで","ない","仕事が"],answer:1,
+     explanation:"正解：彼はあまり仕事が好きでないようです。順序：あまり(1位)＋仕事が(2位)＋好きで(★3位)＋ない(4位)。★＝好きで。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\nこの映画は ＿＿ ★ ＿＿ ＿＿ あります。\n【語：前に ／ 見た ／ ことが ／ 一度】",
+     options:["前に","見た","ことが","一度"],answer:0,
+     explanation:"正解：この映画は一度前に見たことがあります。順序：一度(1位)＋前に(★2位)＋見た(3位)＋ことが(4位)。★＝前に。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n宿題が ＿＿ ＿＿ ★ ＿＿ いいです。\n【語：終わって ／ から ／ 遊んでも ／ 五時に】",
+     options:["終わって","から","遊んでも","五時に"],answer:2,
+     explanation:"正解：宿題が終わってから遊んでもいいです。五時に is extra. ★(3番目)＝遊んでも。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\nお腹が ＿＿ ★ ＿＿ ＿＿ しまいました。\n【語：食べすぎて ／ なって ／ 痛く ／ 空いて】",
+     options:["食べすぎて","なって","痛く","空いて"],answer:2,
+     explanation:"正解：お腹が空いて食べすぎて痛くなってしまいました。★(3番目)＝痛く。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n彼女は ＿＿ ★ ＿＿ ＿＿ 言っていました。\n【語：明日 ／ と ／ 来られない ／ は】",
+     options:["明日","と","来られない","は"],answer:3,
+     explanation:"正解：彼女は明日は来られないと言っていました。順序：明日(1位)＋は(★2位)＋来られない(3位)＋と(4位)。★＝は。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\n駅まで ＿＿ ＿＿ ★ ＿＿ かかります。\n【語：歩い ／ 分 ／ 十五 ／ て】",
+     options:["歩い","分","十五","て"],answer:2,
+     explanation:"正解：駅まで歩いて十五分かかります。★(3番目)＝十五。Order: 歩い＋て＋十五＋分かかります。"},
+    {type:"文の組み立て",
+     q:"次の語を並べ替えて文を完成させるとき、★に入るものはどれか。\n\nこの薬は ＿＿ ＿＿ ＿＿ ★ 飲んでください。\n【語：食事 ／ 後に ／ の ／ 必ず】",
+     options:["食事","後に","の","必ず"],answer:3,
+     explanation:"正解：この薬は食事の後に必ず飲んでください。順序：食事(1位)＋の(2位)＋後に(3位)＋必ず(★4位)。★＝必ず。"},
+    // --- 文章の文法 — passage with 5 blanks (31-35) ---
+    {type:"文章の文法",
+     passage:"先週、友達と映画を見①（　）ました。映画は思ったより②（　）、二時間があっという間でした。映画が終わった③（　）、レストランで夕食を食べました。彼女は料理が④（　）、いつも食事の話をします。また⑤（　）行きたいです。",
+     passageId:"P-grammar",
+     q:"①（　）に入る最も適切なものは？",
+     options:["行って","に行き","で行き","を行き"],answer:1,
+     explanation:"映画を見に行く = go to watch a movie. 見に行き（ます）is the correct form (purpose-of-movement)."},
+    {type:"文章の文法",passage:"",passageId:"P-grammar",
+     q:"②（　）に入る最も適切なものは？",
+     options:["おもしろい","おもしろかった","おもしろく","おもしろくて"],answer:3,
+     explanation:"おもしろくて（て-form）connects to the next clause: おもしろくて、二時間があっという間だった。"},
+    {type:"文章の文法",passage:"",passageId:"P-grammar",
+     q:"③（　）に入る最も適切なものは？",
+     options:["後で","前に","ながら","ように"],answer:0,
+     explanation:"映画が終わった後で＝after the movie ended. 後で is correct for sequential action."},
+    {type:"文章の文法",passage:"",passageId:"P-grammar",
+     q:"④（　）に入る最も適切なものは？",
+     options:["得意で","得意な","得意の","得意に"],answer:0,
+     explanation:"料理が得意で（て-form）connects: she's good at cooking AND always talks about food."},
+    {type:"文章の文法",passage:"",passageId:"P-grammar",
+     q:"⑤（　）に入る最も適切なものは？",
+     options:["一緒に","一緒の","一緒で","一緒へ"],answer:0,
+     explanation:"一緒に（いっしょに）= together. 「一緒に行く」= go together."},
+    // --- 読解短文 (36-47, 3 passages × 4q) ---
+    {type:"読解短文",passageId:"R1",
+     passage:"来週の月曜日に、会社の全員が集まる会議があります。場所は三階の会議室です。時間は午後二時から四時までの予定です。資料は事前に配りますが、各自でコピーを持参してください。何かご質問がある方は、鈴木まで連絡してください。",
+     q:"この会議はいつ行われますか？",
+     options:["来週の月曜日","来週の火曜日","今週の月曜日","先週の月曜日"],answer:0,
+     explanation:"「来週の月曜日に、会社の全員が集まる会議があります」と書かれています。"},
+    {type:"読解短文",passageId:"R1",passage:"",
+     q:"会議はどこで行われますか？",
+     options:["三階の会議室","四階の会議室","二階の会議室","一階のロビー"],answer:0,
+     explanation:"「場所は三階の会議室です」と書かれています。"},
+    {type:"読解短文",passageId:"R1",passage:"",
+     q:"会議は何時間の予定ですか？",
+     options:["二時間","一時間","三時間","四時間"],answer:0,
+     explanation:"「午後二時から四時まで」= 2時間（two hours）。"},
+    {type:"読解短文",passageId:"R1",passage:"",
+     q:"参加者は何を持ってくるべきですか？",
+     options:["資料のコピー","筆記用具","鈴木さんの連絡先","アジェンダ"],answer:0,
+     explanation:"「各自でコピーを持参してください」と書かれています。"},
+    {type:"読解短文",passageId:"R2",
+     passage:"わたしは今、日本語を勉強しています。週に三回、学校に通っています。先生はとても親切で、わかりやすく教えてくれます。最初は難しいと思っていましたが、毎日練習すると少しずつ上手になってきました。来年の春にはJLPT N3に挑戦したいと思っています。",
+     q:"この人は週に何回学校に行きますか？",
+     options:["三回","二回","毎日","一回"],answer:0,
+     explanation:"「週に三回、学校に通っています」と書かれています。"},
+    {type:"読解短文",passageId:"R2",passage:"",
+     q:"先生についてどう書かれていますか？",
+     options:["親切でわかりやすい","厳しい","あまり親切ではない","教え方が複雑だ"],answer:0,
+     explanation:"「先生はとても親切で、わかりやすく教えてくれます」とあります。"},
+    {type:"読解短文",passageId:"R2",passage:"",
+     q:"最初、この人は日本語をどう思っていましたか？",
+     options:["難しい","簡単","楽しい","つまらない"],answer:0,
+     explanation:"「最初は難しいと思っていましたが」と書かれています。"},
+    {type:"読解短文",passageId:"R2",passage:"",
+     q:"この人は来年の春に何をしたいですか？",
+     options:["N3に挑戦したい","N2に挑戦したい","日本に旅行したい","学校をやめたい"],answer:0,
+     explanation:"「来年の春にはJLPT N3に挑戦したいと思っています」とあります。"},
+    {type:"読解短文",passageId:"R3",
+     passage:"今月の二十五日（土）に、地域の春まつりがあります。時間は午前十時から午後五時までです。まつりでは、地元の料理や工芸品が楽しめます。子供向けのイベントもあります。参加は無料ですが、食べ物は別料金です。詳しくはウェブサイトをご覧ください。",
+     q:"春まつりはいつですか？",
+     options:["今月の二十五日（土）","来月の二十五日","先月の二十五日","今週の土曜日"],answer:0,
+     explanation:"「今月の二十五日（土）に、地域の春まつりがあります」と書かれています。"},
+    {type:"読解短文",passageId:"R3",passage:"",
+     q:"まつりの参加費はどうですか？",
+     options:["参加は無料（食べ物は別料金）","すべて無料","すべて有料","子供は有料"],answer:0,
+     explanation:"「参加は無料ですが、食べ物は別料金です」と書かれています。"},
+    {type:"読解短文",passageId:"R3",passage:"",
+     q:"まつりで楽しめるものはどれですか？",
+     options:["地元の料理や工芸品","外国の料理","スポーツイベント","映画鑑賞"],answer:0,
+     explanation:"「地元の料理や工芸品が楽しめます」と書かれています。"},
+    {type:"読解短文",passageId:"R3",passage:"",
+     q:"詳細を知りたいときはどうすればよいですか？",
+     options:["ウェブサイトを見る","電話をする","直接会場に行く","メールを送る"],answer:0,
+     explanation:"「詳しくはウェブサイトをご覧ください」と書かれています。"},
+    // --- 読解中文 (48-55, 2 passages × 4q) ---
+    {type:"読解中文",passageId:"M1",
+     passage:"現代の生活では、スマートフォンは欠かせない道具になっています。電話やメールだけでなく、ショッピングや地図、ニュースの確認など、多くのことがスマートフォンでできるようになりました。しかし、使いすぎると問題も生じます。夜遅くまでスマートフォンを使うと睡眠が不足し、健康に影響が出ることがあります。また、スマートフォンを見ながら歩く「歩きスマホ」は事故の原因にもなります。便利な道具を正しく使うために、自分でルールを決めることが大切です。",
+     q:"スマートフォンで何ができますか？",
+     options:["電話・メール・ショッピング・地図など多くのこと","電話とメールだけ","仕事だけ","地図を見ることだけ"],answer:0,
+     explanation:"「電話やメールだけでなく、ショッピングや地図、ニュースの確認など」とあります。"},
+    {type:"読解中文",passageId:"M1",passage:"",
+     q:"夜遅くまでスマートフォンを使うとどうなりますか？",
+     options:["睡眠が不足し健康に影響が出る","目が良くなる","ストレスが減る","運動不足になる"],answer:0,
+     explanation:"「夜遅くまでスマートフォンを使うと睡眠が不足し、健康に影響が出ることがあります」とあります。"},
+    {type:"読解中文",passageId:"M1",passage:"",
+     q:"「歩きスマホ」の問題は何ですか？",
+     options:["事故の原因になる","バッテリーを使いすぎる","電波が悪くなる","道に迷う"],answer:0,
+     explanation:"「歩きスマホ」は事故の原因にもなります」とあります。"},
+    {type:"読解中文",passageId:"M1",passage:"",
+     q:"筆者のスマートフォンについての意見は何ですか？",
+     options:["便利だが正しく使うことが大切","使わないほうがよい","何でも使ってよい","高校生には必要ない"],answer:0,
+     explanation:"「便利な道具を正しく使うために、自分でルールを決めることが大切です」とあります。"},
+    {type:"読解中文",passageId:"M2",
+     passage:"日本には春・夏・秋・冬の四つの季節があります。春は桜が咲き、花見を楽しむ人が多いです。夏は暑く、海や山でのレジャーが人気です。秋は紅葉が美しく、特に京都には多くの観光客が訪れます。冬は寒いですが、温泉や雪景色を楽しむことができます。このように、日本では季節ごとに異なる楽しみ方があります。外国から来た観光客の多くが、四季の変化を日本の魅力の一つとして挙げています。",
+     q:"春に楽しめることは何ですか？",
+     options:["桜の花見","海水浴","紅葉鑑賞","温泉"],answer:0,
+     explanation:"「春は桜が咲き、花見を楽しむ人が多いです」とあります。"},
+    {type:"読解中文",passageId:"M2",passage:"",
+     q:"秋に京都を多くの人が訪れる理由は何ですか？",
+     options:["紅葉が美しいから","桜が咲くから","温泉があるから","海が近いから"],answer:0,
+     explanation:"「秋は紅葉が美しく、特に京都には多くの観光客が訪れます」とあります。"},
+    {type:"読解中文",passageId:"M2",passage:"",
+     q:"外国人観光客が日本の魅力として挙げているものは何ですか？",
+     options:["四季の変化","食べ物のおいしさ","東京の夜景","温泉の多さ"],answer:0,
+     explanation:"「四季の変化を日本の魅力の一つとして挙げています」とあります。"},
+    {type:"読解中文",passageId:"M2",passage:"",
+     q:"この文章の主なテーマは何ですか？",
+     options:["日本の四季とその楽しみ方","日本の有名な観光地","日本の気候変動","外国人と日本"],answer:0,
+     explanation:"文章全体が「日本の四季ごとの楽しみ方」について書かれています。"},
+  ]
+},
+{
+  id:"listening", title:"聴解", titleEn:"Listening", timeMin:35,
+  questions:[
+    // --- 課題理解 (1-15) ---
+    {type:"課題理解",
+     passage:"【レストランで】\nウエイター：「ご注文はお決まりですか？」\n客：「えーと、ランチセットAと、コーヒーをお願いします。あと、デザートはケーキを一つ。」\nウエイター：「ランチセットAとコーヒーとケーキですね。かしこまりました。」",
+     q:"客は何を注文しましたか？",
+     options:["ランチセットAとコーヒーとケーキ","ランチセットBとコーヒー","ランチセットAとお茶","コーヒーとケーキだけ"],answer:0,
+     explanation:"客は「ランチセットA」「コーヒー」「ケーキ一つ」を注文しました。"},
+    {type:"課題理解",
+     passage:"【職場で】\n上司：「山田さん、今日の午後の会議の資料、コピーを二十部お願いできますか？会議は三時からなので、二時半までにお願いします。」\n山田：「わかりました。」",
+     q:"山田さんは何を、何時までにすればいいですか？",
+     options:["資料を二十部コピーして二時半までに","資料を十部コピーして三時まで","会議の準備をして二時半まで","資料を二十部作って三時まで"],answer:0,
+     explanation:"「資料のコピーを二十部、二時半まで」が正解です。"},
+    {type:"課題理解",
+     passage:"【電話で】\nA：「もしもし、田中商事の佐藤です。鈴木部長はいらっしゃいますか？」\nB：「申し訳ございませんが、ただいま外出中です。ご伝言を承りますが。」\nA：「では、明日の午前中にお電話いただけるようお伝えください。」",
+     q:"佐藤さんはどんな伝言を残しましたか？",
+     options:["明日の午前中に電話してほしい","今日中に電話してほしい","明日の午後に電話してほしい","鈴木部長に会いたい"],answer:0,
+     explanation:"「明日の午前中にお電話いただけるようお伝えください」と言いました。"},
+    {type:"課題理解",
+     passage:"【駅で】\n駅員：「次の電車は三番線から十五分後に出ます。快速なので○○駅と△△駅には止まりません。」\n乗客：「私は○○駅で降りたいのですが。」\n駅員：「でしたら、二番線の各駅停車をお待ちください。五分後に出ます。」",
+     q:"乗客は何をすればよいですか？",
+     options:["二番線で各駅停車を待つ","三番線で快速を待つ","十五分後の電車に乗る","タクシーを使う"],answer:0,
+     explanation:"駅員は「二番線の各駅停車をお待ちください」と言いました。"},
+    {type:"課題理解",
+     passage:"【学校で】\n先生：「皆さん、来週の月曜日に小テストがあります。範囲は第五課から第七課までです。文法が中心ですが、漢字も出ます。」",
+     q:"テストについて正しいのはどれですか？",
+     options:["来週月曜日・第五〜七課・文法中心","今週月曜日にテストがある","漢字だけのテストがある","第三課から第七課が範囲"],answer:0,
+     explanation:"「来週月曜日、第5〜7課、文法中心で漢字も出る」が正解です。"},
+    {type:"課題理解",
+     passage:"【洋服屋で】\n客：「この服、Mサイズはありますか？」\n店員：「MサイズはいまのところBule（青）と白があります。赤は品切れで来週入荷予定です。」\n客：「では、白のMサイズをいただきます。」",
+     q:"客は何を買いましたか？",
+     options:["白のMサイズ","青のMサイズ","赤のMサイズ","白のLサイズ"],answer:0,
+     explanation:"客は「白のMサイズをいただきます」と言いました。"},
+    {type:"課題理解",
+     passage:"【友人同士で】\nA：「今週の土曜日、映画でも見に行きませんか？」\nB：「土曜日は午前中バイトがあります。午後からなら大丈夫です。」\nA：「じゃあ、二時に駅前で待ち合わせはどうですか？」\nB：「いいですね。では二時に。」",
+     q:"二人はいつ、どこで会うことにしましたか？",
+     options:["土曜日午後二時・駅前","土曜日午前・映画館","日曜日午後二時・駅前","土曜日午後一時・映画館"],answer:0,
+     explanation:"「二時に駅前で」が約束の内容です。"},
+    {type:"課題理解",
+     passage:"【病院で】\n医者：「喉を見せてください。少し赤いですね。風邪だと思います。この薬を一日三回、食後に飲んでください。二、三日は仕事を休んだほうがいいですよ。」",
+     q:"医者は患者に何を言いましたか？",
+     options:["一日三回薬を飲み、2〜3日仕事を休む","一日一回薬を飲み、仕事は続けてよい","入院が必要","水をたくさん飲めばよい"],answer:0,
+     explanation:"「一日三回食後に服薬」と「二、三日は休む」が正解です。"},
+    {type:"課題理解",
+     passage:"【週末の予定】\nA：「日曜日に一緒に図書館で勉強しませんか？」\nB：「いいですね。何時にしますか？」\nA：「午後二時はどうですか？」\nB：「大丈夫です。」",
+     q:"二人は日曜日に何をしますか？",
+     options:["午後二時に図書館で勉強する","午後二時にレストランで食事する","土曜日に図書館で勉強する","日曜日に映画を見る"],answer:0,
+     explanation:"「日曜日午後二時、図書館で勉強」が正解です。"},
+    {type:"課題理解",
+     passage:"【ホテルの予約電話】\n客：「来週の金曜日からニ泊、二人でお願いしたいのですが。」\nホテル：「ありがとうございます。ご予約を承ります。お名前をお願いできますか？」",
+     q:"客は何を予約しようとしていますか？",
+     options:["来週金曜日から二泊、二人","来週金曜日から一泊","レストランの予約","来週土曜日から宿泊"],answer:0,
+     explanation:"「来週金曜日から二泊・二人」がホテル予約の内容です。"},
+    {type:"課題理解",
+     passage:"【郵便局で】\n客：「この荷物を東京に送りたいのですが、明日の午前中に届けてほしいです。」\n職員：「では速達でお願いします。料金は八百円になります。」",
+     q:"客はどのようにして荷物を送りますか？",
+     options:["速達で八百円","普通便で八百円","速達で料金不明","普通便で安く"],answer:0,
+     explanation:"「速達・八百円」が正解です。"},
+    {type:"課題理解",
+     passage:"【家の中で】\nA：「夕食できた？」\nB：「あと十分くらいで終わるから。テーブルを並べておいて。あと、お皿も出してくれる？」\nA：「わかった。」",
+     q:"Aはこれから何をしますか？",
+     options:["テーブルを並べてお皿を出す","テーブルを並べるだけ","夕食を作る","何もしない"],answer:0,
+     explanation:"AはBに頼まれた「テーブルを並べる」と「お皿を出す」両方をします。"},
+    {type:"課題理解",
+     passage:"【道案内】\nA：「すみません、郵便局はどこですか？」\nB：「この道をまっすぐ行って、信号を左に曲がると、右側にあります。」",
+     q:"郵便局はどこにありますか？",
+     options:["まっすぐ行って信号を左、右側","信号を右に曲がって左側","まっすぐ行って左側","信号の手前の右側"],answer:0,
+     explanation:"「まっすぐ→左→右側」が道案内の内容です。"},
+    {type:"課題理解",
+     passage:"【授業の話】\nA：「来学期の授業、どれを取るか決めた？」\nB：「日本語の上級クラスと文化の授業を取ろうと思っています。全部で十二単位になります。」",
+     q:"Bさんは来学期何を取るつもりですか？",
+     options:["日本語上級クラスと文化の授業・12単位","日本語初級クラスと文化の授業","日本語だけ12単位","文化の授業だけ"],answer:0,
+     explanation:"「日本語上級＋文化の授業＝12単位」が正解です。"},
+    {type:"課題理解",
+     passage:"【注文した商品が届かない電話】\nA：「先週注文した商品がまだ届かないのですが。」\nB：「申し訳ございません。在庫切れのため発送が遅れていました。今週金曜日には必ずお届けします。」",
+     q:"商品が遅れた理由は何ですか？",
+     options:["在庫切れのため","住所が間違っていたため","注文が確認されていなかったため","配送業者のミス"],answer:0,
+     explanation:"「在庫切れのため発送が遅れていた」と言っています。"},
+    // --- ポイント理解 (16-25) ---
+    {type:"ポイント理解",
+     passage:"明日の天気は、東京では午前中は晴れですが、午後から雨が降り始める予報です。傘をお忘れなく。最高気温は二十度、最低は十三度の見込みです。",
+     q:"明日、東京で最も注意すべきことは何ですか？",
+     options:["午後から雨が降るので傘を持つ","気温が低いのでコートを着る","午前中は晴れなので外に出る","気温が二十度なので暑い"],answer:0,
+     explanation:"「午後から雨」と「傘をお忘れなく」が最重要情報です。"},
+    {type:"ポイント理解",
+     passage:"A：「昨日の映画、どうだった？」\nB：「ストーリーはよかったんですが、長すぎて最後は眠くなってしまいました。でも、音楽はすごく良かったですよ。」",
+     q:"Bさんが映画で最も問題だと思った点は何ですか？",
+     options:["映画が長すぎた","ストーリーが悪かった","音楽が悪かった","映画館が遠かった"],answer:0,
+     explanation:"「長すぎて最後は眠くなった」が最大の問題点として挙げられています。"},
+    {type:"ポイント理解",
+     passage:"健康のためには、毎日三十分以上の運動をすることが大切です。また、野菜を多く食べ、夜十一時前に寝ることも重要です。",
+     q:"夜十一時前に寝ることが推奨される理由は何ですか？",
+     options:["健康のために十分な睡眠をとるため","早起きをするため","運動の効果を高めるため","消化を助けるため"],answer:0,
+     explanation:"「睡眠を十分に取ることも重要です」として夜11時前の就寝が推奨されています。"},
+    {type:"ポイント理解",
+     passage:"今月の料理教室では、和食の基本を学びます。だしの取り方から始めて、味噌汁の作り方、そして天ぷらまで教えます。参加費は三千円で、材料費が含まれています。定員は十二名です。",
+     q:"料理教室で最初に学ぶことは何ですか？",
+     options:["だしの取り方","天ぷらの作り方","味噌汁の作り方","和食の歴史"],answer:0,
+     explanation:"「だしの取り方から始めて」と明記されています。"},
+    {type:"ポイント理解",
+     passage:"当社では、来月から新しいルールが始まります。社員証を毎日持参し、ビルに入るときに必ず見せてください。また、残業の際には事前に上司の承認が必要です。",
+     q:"新しいルールの目的として最も適切なのはどれですか？",
+     options:["セキュリティ管理と残業管理のため","社員の健康管理のため","経費削減のため","新入社員のため"],answer:0,
+     explanation:"「社員証提示=セキュリティ」「残業の承認=残業管理」が目的です。"},
+    {type:"ポイント理解",
+     passage:"今週末、当店では全商品が三十パーセントオフになります。ただし、セール品は返品・交換ができませんので、ご注意ください。お支払いは現金のみとなります。",
+     q:"このセールで最も注意すべきことは何ですか？",
+     options:["セール品は返品・交換できない","全品五十パーセントオフ","カードが使える","セールは来週末"],answer:0,
+     explanation:"「セール品は返品・交換ができません」という点が最重要の注意事項です。"},
+    {type:"ポイント理解",
+     passage:"本の貸し出しは一人五冊まで、期間は二週間です。延長は一回まで可能で、一週間延ばせます。返却が遅れると一日ごとに五十円の延滞料金がかかります。",
+     q:"図書館の本を延滞したらどうなりますか？",
+     options:["一日ごとに五十円の料金がかかる","二度と借りられなくなる","罰金千円","二週間は借りられない"],answer:0,
+     explanation:"「返却が遅れると一日ごとに五十円の延滞料金」とあります。"},
+    {type:"ポイント理解",
+     passage:"海外留学を考えている方へ。語学力はもちろん大事ですが、異文化への理解と柔軟性が最も重要です。言葉が通じなくても、オープンな姿勢があれば必ず乗り越えられます。",
+     q:"このアドバイスで最も大切とされていることは何ですか？",
+     options:["異文化への理解と柔軟性","語学力","お金の準備","友達を作ること"],answer:0,
+     explanation:"「異文化への理解と柔軟性が最も重要です」と明記されています。"},
+    {type:"ポイント理解",
+     passage:"面接では、まず挨拶と自己紹介が大事です。質問には正直に答え、自分の強みを具体的に伝えましょう。また、企業についてしっかり調べておくことも忘れずに。",
+     q:"面接で最初に大事なことは何ですか？",
+     options:["挨拶と自己紹介","企業について調べること","強みを具体的に伝えること","正直に答えること"],answer:0,
+     explanation:"「まず挨拶と自己紹介が大事です」と最初に挙げられています。"},
+    {type:"ポイント理解",
+     passage:"来月、地域のクリーニングイベントを行います。参加者全員にゴミ袋と手袋を配ります。終了後は公民館でお茶とお菓子を用意しています。小学生以上の方ならどなたでも参加できます。",
+     q:"このイベントへの参加条件は何ですか？",
+     options:["小学生以上であること","大人のみ","地域の住民のみ","事前申し込みが必要"],answer:0,
+     explanation:"「小学生以上の方ならどなたでも参加できます」とあります。"},
+    // --- 発話表現 (26-30) ---
+    {type:"発話表現",
+     passage:"【状況】もう一度ゆっくり言ってほしいとき、どう言いますか？",
+     q:"どの表現が最も適切ですか？",
+     options:["もう一度、ゆっくり言っていただけますか？","何ですか？","はっきり言ってください！","わかりません。"],answer:0,
+     explanation:"「もう一度〜ていただけますか？」は丁寧なお願いの表現です。"},
+    {type:"発話表現",
+     passage:"【状況】フォーマルな会議で、目上の人にペンを借りたいとき。",
+     q:"どの表現が最も適切ですか？",
+     options:["ペンをお貸しいただけますか？","ペン貸して！","ペンを使います。","ペンがありません。"],answer:0,
+     explanation:"「お〜いただけますか？」は丁寧な依頼表現です。目上の人に使う適切な敬語です。"},
+    {type:"発話表現",
+     passage:"【状況】「来週のパーティー、来られますか？」と誘われた。丁寧に断りたい。",
+     q:"どの表現が最も適切ですか？",
+     options:["申し訳ありませんが、先約があって伺えません。","行きたくないです。","パーティーは嫌いです。","忙しいです。"],answer:0,
+     explanation:"「申し訳ありませんが〜伺えません」は丁寧な断り方です。先約があることを理由にします。"},
+    {type:"発話表現",
+     passage:"【状況】会議中にスマートフォンを使っていいか確認したい。",
+     q:"どの表現が最も適切ですか？",
+     options:["こちらで電話を使ってもよろしいですか？","電話します。","電話を使います、すみません。","静かにしてください。"],answer:0,
+     explanation:"「〜てもよろしいですか？」は丁寧な許可を求める表現です。"},
+    {type:"発話表現",
+     passage:"【状況】お店で商品を手に取って見てみたい。",
+     q:"どの表現が最も適切ですか？",
+     options:["これを見せていただけますか？","これを見たいです。","これをください。","これはいくらですか？"],answer:0,
+     explanation:"「見せていただけますか？」は商品を見せてもらう丁寧な依頼表現です。"},
+    // --- 即時応答 (31-35) ---
+    {type:"即時応答",
+     passage:"「お先に失礼します。」と言われた。",
+     q:"どう答えるのが適切ですか？",
+     options:["お疲れ様でした。","行ってらっしゃい。","おやすみなさい。","ありがとう。"],answer:0,
+     explanation:"「お先に失礼します」には「お疲れ様でした」が自然な返答です。職場の別れの言葉。"},
+    {type:"即時応答",
+     passage:"「ご迷惑をおかけしました。」と言われた。",
+     q:"どう答えるのが適切ですか？",
+     options:["いいえ、お気になさらないでください。","また迷惑をかけないでください。","すみません。","どういたしまして。"],answer:0,
+     explanation:"「お気になさらないでください」は相手の謝罪を和らげる丁寧な返答です。"},
+    {type:"即時応答",
+     passage:"「このお菓子、よかったらどうぞ。」と言われた。",
+     q:"どう答えるのが適切ですか？",
+     options:["ありがとうございます。いただきます。","要りません。","なぜですか？","お菓子ですか？"],answer:0,
+     explanation:"「ありがとうございます。いただきます。」はものをもらうときの自然な表現です。"},
+    {type:"即時応答",
+     passage:"「明日の打ち合わせ、大丈夫ですか？」と聞かれた。",
+     q:"どう答えるのが適切ですか？",
+     options:["はい、問題ありません。","いいえ、明日です。","大丈夫とは何ですか？","明日は月曜日です。"],answer:0,
+     explanation:"「はい、問題ありません」は確認の問いかけへの自然な肯定の返答です。"},
+    {type:"即時応答",
+     passage:"「先ほど電話した鈴木ですが、田中様はいらっしゃいますか？」と聞かれた（田中さんは今いない）。",
+     q:"どう答えるのが適切ですか？",
+     options:["ただいま席を外しております。よろしければご伝言を承ります。","いません。","田中さんはいません。","今は話せません。"],answer:0,
+     explanation:"「席を外しております」は在席していない場合の丁寧な表現。伝言の申し出も適切です。"},
+  ]
+}
+];
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let mode = "exam";
+let currentSection = 0;
+let currentQ = 0;
+let answers = [[],[],[]]; // per section, index = question idx, value = chosen option index or -1
+let sectionTimers = [null,null,null];
+let sectionTimeLeft = [25*60, 55*60, 35*60];
+let passageCache = {}; // passageId -> text
+
+// ── Theme toggle ──
+document.getElementById("themeBtn").onclick = () => {
+  const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", t);
+  document.documentElement.classList.toggle("light-mode", t === "light");
+  localStorage.setItem("n4.theme", t);
+  document.getElementById("themeBtn").textContent = t === "dark" ? "☀" : "🌙";
+};
+(function(){
+  const t = localStorage.getItem("n4.theme")||"dark";
+  document.getElementById("themeBtn").textContent = t === "dark" ? "☀" : "🌙";
+})();
+
+// ── Mode selection ──
+window.selectMode = function(m) {
+  mode = m;
+  document.getElementById("modeExam").classList.toggle("selected", m === "exam");
+  document.getElementById("modePractice").classList.toggle("selected", m === "practice");
+};
+
+// ── Start test ──
+window.startTest = function() {
+  currentSection = 0;
+  currentQ = 0;
+  answers = SECTIONS.map(s => new Array(s.questions.length).fill(-1));
+  sectionTimeLeft = [25*60, 55*60, 35*60];
+  document.getElementById("screen-landing").hidden = true;
+  document.getElementById("screen-test").hidden = false;
+  renderQuestion();
+  if(mode === "exam") startSectionTimer();
+};
+
+// ── Timer ──
+function startSectionTimer() {
+  clearInterval(sectionTimers[currentSection]);
+  sectionTimers[currentSection] = setInterval(() => {
+    sectionTimeLeft[currentSection]--;
+    updateTimerDisplay();
+    if(sectionTimeLeft[currentSection] <= 0) {
+      clearInterval(sectionTimers[currentSection]);
+      autoAdvanceSection();
+    }
+  }, 1000);
+}
+function stopAllTimers() {
+  sectionTimers.forEach(t => clearInterval(t));
+}
+function updateTimerDisplay() {
+  const d = document.getElementById("timerDisplay");
+  if(mode !== "exam") { d.textContent = ""; return; }
+  const s = sectionTimeLeft[currentSection];
+  const m = Math.floor(s/60), sec = s%60;
+  d.textContent = `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+  d.className = "timer-display" + (s < 60 ? " urgent" : s < 300 ? " warn" : "");
+}
+function autoAdvanceSection() {
+  if(currentSection < SECTIONS.length - 1) {
+    showSectionTransition(true);
+  } else {
+    finishTest();
+  }
+}
+
+// ── Render question ──
+function renderQuestion() {
+  const sec = SECTIONS[currentSection];
+  const q = sec.questions[currentQ];
+  const tag = document.getElementById("sectionTag");
+  tag.textContent = sec.title;
+  tag.className = "section-tag " + sec.id;
+  document.getElementById("qCount").textContent =
+    `Q${currentQ+1} / ${sec.questions.length} — Section ${currentSection+1}/3`;
+  const total = SECTIONS.slice(0, currentSection).reduce((a,s)=>a+s.questions.length,0) + currentQ;
+  const totalQ = SECTIONS.reduce((a,s)=>a+s.questions.length,0);
+  document.getElementById("progressFill").style.width = (total/totalQ*100)+"%";
+  updateTimerDisplay();
+
+  let passageHtml = "";
+  if(q.passage && q.passage.trim()) {
+    if(q.passageId) passageCache[q.passageId] = q.passage;
+    passageHtml = `<div class="passage-box"><span class="passage-label">📄 文章</span><div class="jp" style="white-space:pre-wrap">${q.passage}</div></div>`;
+  } else if(q.passageId && passageCache[q.passageId]) {
+    passageHtml = `<div class="passage-box"><span class="passage-label">📄 文章（前の問題と同じ）</span><div class="jp" style="white-space:pre-wrap">${passageCache[q.passageId]}</div></div>`;
+  }
+
+  const typeLabel = q.type || "";
+  const chosen = answers[currentSection][currentQ];
+  const answered = chosen !== -1;
+  const isPractice = mode === "practice";
+
+  let optsHtml = q.options.map((opt,i) => {
+    let cls = "opt-btn";
+    if(isPractice && answered) {
+      if(i === q.answer) cls += " correct";
+      else if(i === chosen) cls += " wrong";
+    } else if(i === chosen) cls += " selected";
+    const disabled = (isPractice && answered) ? "disabled" : "";
+    return `<button class="opt-btn${cls === "opt-btn" ? "" : cls.slice(7)}" ${disabled} onclick="chooseAnswer(${i})">
+      <span class="num">${["A","B","C","D"][i]}</span>
+      <span class="jp">${opt}</span>
+    </button>`;
+  }).join("");
+
+  let explainHtml = "";
+  if(isPractice && answered) {
+    const ok = chosen === q.answer;
+    explainHtml = `<div class="explain-box show${ok?"":" wrong-fb"}">
+      <span class="correct-lbl">${ok?"✓ 正解！":"✗ 不正解 — 正解は「${q.options[q.answer]}」"}</span>
+      ${q.explanation}
+    </div>`;
+  }
+
+  const qTextFormatted = (q.q||"").replace(/\n/g,"<br>");
+
+  document.getElementById("questionArea").innerHTML = `
+    <div class="q-card">
+      <div class="q-type-badge">${typeLabel}</div>
+      ${passageHtml}
+      <div class="q-text jp">${qTextFormatted}</div>
+      <div class="opts">${optsHtml}</div>
+      ${explainHtml}
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="prevQ()" ${currentQ === 0 && currentSection === 0 ? "disabled":""}>← Back</button>
+      <button class="nav-btn" id="skipBtn" onclick="skipQ()" ${answered ? "disabled":""}>Skip</button>
+      <button class="nav-btn primary" id="nextBtn" onclick="nextQ()">${isLastQ() ? (currentSection < SECTIONS.length-1 ? "Next Section →" : "Finish Test") : "Next →"}</button>
+    </div>
+  `;
+}
+
+function isLastQ() {
+  return currentQ === SECTIONS[currentSection].questions.length - 1;
+}
+
+window.chooseAnswer = function(i) {
+  if(mode === "practice" && answers[currentSection][currentQ] !== -1) return;
+  answers[currentSection][currentQ] = i;
+  renderQuestion();
+};
+
+window.prevQ = function() {
+  if(currentQ > 0) { currentQ--; renderQuestion(); }
+  else if(currentSection > 0) { currentSection--; currentQ = SECTIONS[currentSection].questions.length-1; renderQuestion(); if(mode==="exam") startSectionTimer(); }
+};
+
+window.skipQ = function() {
+  answers[currentSection][currentQ] = -1;
+  nextQ();
+};
+
+window.nextQ = function() {
+  if(!isLastQ()) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    if(currentSection < SECTIONS.length - 1) {
+      showSectionTransition(false);
+    } else {
+      finishTest();
+    }
+  }
+};
+
+function showSectionTransition(timedOut) {
+  const nextSec = SECTIONS[currentSection + 1];
+  clearInterval(sectionTimers[currentSection]);
+  document.getElementById("questionArea").innerHTML = `
+    <div class="sec-transition">
+      <h2>✓ Section ${currentSection+1} Complete</h2>
+      <p>${timedOut ? "⏱ Time's up for this section." : "You've answered all questions in this section."}</p>
+      <p style="margin-bottom:20px">Next: <strong class="jp">${nextSec.title}</strong> — ${nextSec.questions.length} questions, ${nextSec.timeMin} min</p>
+      <button class="start-btn" style="max-width:300px;margin:0 auto" onclick="goNextSection()">Start ${nextSec.titleEn} →</button>
+    </div>
+    <div class="nav-row" style="margin-top:0">
+      <button class="nav-btn warn-btn" onclick="finishTest()">Submit & Finish Early</button>
+    </div>
+  `;
+  document.getElementById("progressFill").style.width =
+    ((SECTIONS.slice(0,currentSection+1).reduce((a,s)=>a+s.questions.length,0))/
+     SECTIONS.reduce((a,s)=>a+s.questions.length,0)*100)+"%";
+}
+
+window.goNextSection = function() {
+  currentSection++;
+  currentQ = 0;
+  renderQuestion();
+  if(mode==="exam") startSectionTimer();
+};
+
+// ── Finish & Score ──
+async function finishTest() {
+  stopAllTimers();
+  // Score each section
+  const scores = SECTIONS.map((sec, si) => {
+    let correct = 0;
+    sec.questions.forEach((q,qi) => { if(answers[si][qi] === q.answer) correct++; });
+    return correct;
+  });
+  const pts = [60/25, 60/55, 60/35];
+  const vs = Math.round(scores[0] * pts[0]);
+  const gs = Math.round(scores[1] * pts[1]);
+  const ls = Math.round(scores[2] * pts[2]);
+  const total = vs + gs + ls;
+  const pass = total >= 90 && vs >= 19 && gs >= 19 && ls >= 19;
+
+  const entry = {ts:Date.now(), testId:"t1", total, vs, gs, ls, pass, mode,
+    vc:scores[0], gc:scores[1], lc:scores[2]};
+
+  // Save to localStorage
+  const lsKey = "n4mock_t1";
+  let hist = JSON.parse(localStorage.getItem(lsKey)||"[]");
+  hist.unshift(entry);
+  hist = hist.slice(0,5);
+  localStorage.setItem(lsKey, JSON.stringify(hist));
+
+  // Save to Firebase
+  try {
+    const username = getUsername();
+    if(username==="guest" || !(await authReady)) throw new Error("not signed in");
+    await addDoc(collection(db,"mock_scores_n4",username,"attempts"), {
+      ...entry, ts: serverTimestamp()
+    });
+  } catch(e){ console.warn("Firebase save failed", e); }
+
+  showResults(entry, scores, hist);
+}
+
+function showResults(entry, scores, hist) {
+  document.getElementById("screen-test").hidden = true;
+  document.getElementById("screen-results").hidden = false;
+
+  const {total, vs, gs, ls, pass, mode:m} = entry;
+  document.getElementById("totalScore").textContent = total;
+  document.getElementById("totalScore").className = "score-big " + (pass?"pass":"fail");
+  document.getElementById("verdict").textContent = pass ? "✓ PASS 合格" : "✗ FAIL 不合格";
+  document.getElementById("verdict").className = "verdict " + (pass?"pass":"fail");
+  document.getElementById("modeChipResult").innerHTML =
+    `<span class="chip ${m}">${m === "exam" ? "Exam Mode" : "Practice Mode"}</span>`;
+
+  // Section cards
+  const secData = [
+    {name:"語彙 Vocabulary", score:vs, correct:scores[0], total:25},
+    {name:"文法・読解 Grammar+Reading", score:gs, correct:scores[1], total:55},
+    {name:"聴解 Listening", score:ls, correct:scores[2], total:35},
+  ];
+  document.getElementById("sectionCards").innerHTML = secData.map(s => {
+    const sp = s.score >= 19;
+    return `<div class="sec-card ${sp?"pass-sec":"fail-sec"}">
+      <div class="sec-name">${s.name}</div>
+      <div class="sec-score">${s.score}<span style="font-size:16px;font-weight:400;color:var(--ink-dim)">/60</span></div>
+      <div class="sec-out">${s.correct}/${s.total} correct · ${sp?"✓ Pass":"✗ Fail"}</div>
+      <div class="sec-bar"><i style="width:${(s.score/60*100).toFixed(0)}%"></i></div>
+    </div>`;
+  }).join("");
+
+  // History table
+  if(hist.length) {
+    const rows = hist.map((h,i) => `<tr>
+      <td>${i+1}</td>
+      <td>${new Date(h.ts).toLocaleDateString()}</td>
+      <td><span class="chip ${h.mode}">${h.mode==="exam"?"Exam":"Practice"}</span></td>
+      <td>${h.vs}</td><td>${h.gs}</td><td>${h.ls}</td>
+      <td><strong>${h.total}</strong>/180</td>
+      <td><span class="chip ${h.pass?"pass":"fail"}">${h.pass?"PASS":"FAIL"}</span></td>
+    </tr>`).join("");
+    document.getElementById("historyTable").innerHTML = `
+      <table class="hist">
+        <thead><tr><th>#</th><th>Date</th><th>Mode</th><th>V</th><th>G</th><th>L</th><th>Total</th><th>Result</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // Answer review
+  let reviewHtml = "";
+  SECTIONS.forEach((sec,si) => {
+    reviewHtml += `<div style="padding:12px 18px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-faint)">${sec.title} — ${sec.titleEn}</div>`;
+    sec.questions.forEach((q,qi) => {
+      const chosen = answers[si][qi];
+      const ok = chosen === q.answer;
+      const skipped = chosen === -1;
+      reviewHtml += `<div class="review-item">
+        <div class="ri-top">
+          <span class="ri-num">Q${qi+1}</span>
+          <span class="ri-status ${skipped?"bad":ok?"ok":"bad"}">${skipped?"—":ok?"✓":"✗"}</span>
+          <span class="q-text-small">${(q.q||"").replace(/\n.*/,"").substring(0,60)}…</span>
+        </div>
+        <div class="ans-row">
+          ${!ok&&!skipped?`<span class="ans-wrong jp">${q.options[chosen]}</span> → `:""}
+          <span class="ans-correct jp">${q.options[q.answer]}</span>
+        </div>
+        <div class="exp">${q.explanation}</div>
+      </div>`;
+    });
+  });
+  document.getElementById("reviewItems").innerHTML = reviewHtml;
+
+  // Load Firebase history too (best-effort)
+  loadFirebaseHistory();
+}
+
+async function loadFirebaseHistory() {
+  try {
+    const username = getUsername();
+    if(username==="guest" || !(await authReady)) return;
+    const q = query(collection(db,"mock_scores_n4",username,"attempts"), orderBy("ts","desc"), limit(5));
+    const snap = await getDocs(q);
+    if(snap.empty) return;
+    const fbHist = snap.docs.map(d=>d.data());
+    const rows = fbHist.map((h,i) => {
+      const date = h.ts?.toDate ? h.ts.toDate().toLocaleDateString() : "—";
+      return `<tr>
+        <td>${i+1}</td><td>${date}</td>
+        <td><span class="chip ${h.mode}">${h.mode==="exam"?"Exam":"Practice"}</span></td>
+        <td>${h.vs}</td><td>${h.gs}</td><td>${h.ls}</td>
+        <td><strong>${h.total}</strong>/180</td>
+        <td><span class="chip ${h.pass?"pass":"fail"}">${h.pass?"PASS":"FAIL"}</span></td>
+      </tr>`;
+    }).join("");
+    document.getElementById("historyTable").innerHTML = `
+      <table class="hist">
+        <thead><tr><th>#</th><th>Date</th><th>Mode</th><th>V</th><th>G</th><th>L</th><th>Total</th><th>Result</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  } catch(e){ console.warn("Firebase history load failed", e); }
+}
+
+window.retakeTest = function() {
+  document.getElementById("screen-results").hidden = true;
+  document.getElementById("screen-landing").hidden = false;
+};
+</script>
+</body>
+</html>

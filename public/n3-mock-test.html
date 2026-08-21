@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>N3 Full Mock Test — N3 Pass Engine</title>
+<style>
+:root{
+  --bg:#12131a;--bg2:#0d0e14;--surface:#1b1d28;--surface2:#222533;
+  --line:#2e3242;--ink:#ece8df;--ink-dim:#a6a8b6;--ink-faint:#8a8d9e;
+  --jade:#5fc28a;--jade-dim:#2c6347;--jade-bg:#16241c;
+  --vermilion:#e2553f;--verm-dim:#5c2a23;--verm-bg:#2a1413;
+  --gold:#d8af52;--gold-bg:#2a2410;--gold-dim:#5a4a20;
+  --indigo:#7c8cf0;--indigo-dim:#363c6e;--indigo-bg:#1a1d35;
+  --rose:#e07ba1;--radius:14px;
+  --fail-text:#f08080;--hdr-bg:#0d0e14ee;
+  --jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","YuGothic","Meiryo","Noto Sans JP",sans-serif;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f5f4f0;--bg2:#eae8e2;--surface:#ffffff;--surface2:#f0ede7;
+  --line:#d4d0c8;--ink:#1c1d26;--ink-dim:#525468;--ink-faint:#888a9a;
+  --jade:#1a7040;--jade-dim:#a8dfc0;--jade-bg:#eaf7f0;
+  --vermilion:#c03020;--verm-dim:#f5c5be;--verm-bg:#fdf0ee;
+  --gold:#8a6610;--gold-bg:#fdf4e0;--gold-dim:#d4aa44;
+  --indigo:#3d50d8;--indigo-dim:#c8cef8;--indigo-bg:#eef0fd;
+  --rose:#b04570;--fail-text:#c03020;--hdr-bg:#f5f4f0ee;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ui);background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.jp{font-family:var(--jp)}
+h1,h2,h3{font-weight:700;line-height:1.25}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--indigo);text-decoration:none}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--hdr-bg);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);display:flex;align-items:center;gap:12px;padding:0 20px;height:52px}
+.hdr-brand{font-family:var(--jp);font-size:20px;color:var(--vermilion);font-weight:800;letter-spacing:1px}
+.hdr-sub{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:2px;flex:1}
+.hdr-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 12px;background:transparent;transition:background .15s,color .15s}
+.hdr-back:hover{background:var(--surface2);color:var(--ink)}
+
+/* ── Screens ── */
+.screen{display:none;min-height:calc(100vh - 52px)}
+.screen.active{display:block}
+
+/* ══ LANDING ══ */
+.landing{max-width:860px;margin:0 auto;padding:36px 20px 80px}
+.landing h1{font-size:clamp(22px,4vw,32px);margin-bottom:8px}
+.landing h1 .jp{color:var(--vermilion)}
+.landing-sub{color:var(--ink-dim);margin-bottom:32px;font-size:14px}
+
+.test-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:32px}
+.test-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.test-card:hover{border-color:var(--vermilion);background:var(--surface2)}
+.test-card.selected{border-color:var(--vermilion);background:var(--verm-bg)}
+.test-card .tc-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--vermilion);margin-bottom:8px}
+.test-card .tc-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.test-card .tc-meta{font-size:12px;color:var(--ink-dim)}
+.test-card .tc-check{position:absolute;top:14px;right:14px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--bg)}
+.test-card.selected .tc-check{background:var(--vermilion);border-color:var(--vermilion);color:#fff}
+.test-card .tc-history{font-size:11px;color:var(--jade);margin-top:8px}
+
+.mode-row{display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap}
+.mode-card{flex:1;min-width:200px;background:var(--surface);border:2px solid var(--line);border-radius:var(--radius);padding:18px 20px;cursor:pointer;transition:border-color .15s,background .15s}
+.mode-card:hover{background:var(--surface2)}
+.mode-card.selected.exam{border-color:var(--vermilion);background:var(--verm-bg)}
+.mode-card.selected.practice{border-color:var(--indigo);background:var(--indigo-bg)}
+.mode-card .mc-icon{font-size:22px;margin-bottom:8px}
+.mode-card .mc-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.mode-card .mc-desc{font-size:12px;color:var(--ink-dim);line-height:1.5}
+
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
+@media(max-width:600px){.info-grid{grid-template-columns:1fr 1fr}}
+.info-box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.info-box .ib-val{font-size:22px;font-weight:800;color:var(--gold)}
+.info-box .ib-lbl{font-size:12px;color:var(--ink-dim);margin-top:3px;font-weight:600}
+
+.start-btn{display:block;width:100%;padding:15px;background:var(--vermilion);border:none;border-radius:var(--radius);color:#fff;font-size:16px;font-weight:700;letter-spacing:.5px;transition:background .15s,transform .1s}
+.start-btn:hover{background:#e8604a}
+.start-btn:active{transform:scale(.98)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ══ TEST ══ */
+.test-layout{display:flex;flex-direction:column;min-height:calc(100vh - 52px)}
+
+.test-topbar{background:var(--bg2);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.section-tabs{display:flex;gap:6px}
+.sec-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid var(--line);background:transparent;color:var(--ink-dim);transition:all .15s}
+.sec-tab.active{background:var(--vermilion);border-color:var(--vermilion);color:#fff}
+.sec-tab.done{background:var(--jade-bg);border-color:var(--jade-dim);color:var(--jade)}
+.timer-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.timer-icon{font-size:16px}
+#timerDisplay{font-variant-numeric:tabular-nums;color:var(--gold)}
+#timerDisplay.warn{color:var(--vermilion);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.progress-bar-wrap{background:var(--bg2);height:3px;width:100%}
+.progress-bar{height:3px;background:var(--vermilion);transition:width .3s}
+
+.test-body{flex:1;max-width:780px;margin:0 auto;width:100%;padding:24px 20px 100px}
+
+.q-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--vermilion);margin-bottom:8px}
+.q-type-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-dim);margin-bottom:10px;letter-spacing:.5px}
+.passage-box{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:14px;line-height:1.9;color:var(--ink-dim)}
+.passage-box.jp-text{font-family:var(--jp);font-size:15px;color:var(--ink-dim)}
+.q-text{font-size:17px;font-weight:600;margin-bottom:16px;line-height:1.6;color:var(--ink)}
+.q-text .jp{font-size:18px;color:var(--ink)}
+
+.opts{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;text-align:left;font-size:15px;line-height:1.5;color:var(--ink);font-family:var(--jp);width:100%}
+.opt:hover{border-color:var(--ink-dim);background:var(--surface2);color:var(--ink)}
+.opt.selected{border-color:var(--indigo);background:var(--indigo-bg);color:var(--ink)}
+.opt.correct{border-color:var(--jade);background:var(--jade-bg);color:var(--jade)}
+.opt.wrong{border-color:var(--vermilion);background:var(--verm-bg);color:var(--fail-text)}
+.opt .opt-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink-dim);font-family:var(--ui);background:var(--bg2)}
+.opt:hover .opt-num{border-color:var(--ink-dim);color:var(--ink)}
+.opt.selected .opt-num{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-bg)}
+.opt.correct .opt-num{border-color:var(--jade);color:var(--jade);background:var(--jade-bg)}
+.opt.wrong .opt-num{border-color:var(--vermilion);color:var(--vermilion);background:var(--verm-bg)}
+.opt-text{font-family:var(--jp);color:inherit}
+
+.explain-box{background:var(--gold-bg);border:1px solid var(--gold-dim);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:14px;color:var(--ink);display:none;line-height:1.6}
+.explain-box.show{display:block}
+.explain-box strong{color:var(--gold)}
+
+.test-nav{display:flex;gap:10px;align-items:center}
+.btn-nav{padding:10px 22px;border-radius:10px;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);transition:all .15s}
+.btn-nav:hover{background:var(--surface2);color:var(--ink)}
+.btn-nav.primary{background:var(--vermilion);border-color:var(--vermilion);color:#fff}
+.btn-nav.primary:hover{background:#e8604a}
+.btn-nav:disabled{opacity:.35;cursor:not-allowed}
+.q-counter{font-size:13px;color:var(--ink-dim);margin-left:auto}
+
+.section-break{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;text-align:center;max-width:500px;margin:40px auto}
+.section-break h2{font-size:20px;margin-bottom:10px}
+.section-break p{color:var(--ink-dim);font-size:14px;margin-bottom:20px}
+.section-scores-mini{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+.mini-score{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 16px;text-align:center}
+.mini-score .ms-v{font-size:18px;font-weight:800;color:var(--jade)}
+.mini-score .ms-l{font-size:11px;color:var(--ink-dim);margin-top:2px;font-weight:600}
+
+/* ══ RESULTS ══ */
+.results{max-width:780px;margin:0 auto;padding:32px 20px 80px}
+.results h1{font-size:26px;margin-bottom:6px}
+.pass-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:24px}
+.pass-badge.pass{background:var(--jade-bg);border:1px solid var(--jade-dim);color:var(--jade)}
+.pass-badge.fail{background:var(--verm-bg);border:1px solid var(--verm-dim);color:var(--fail-text)}
+.pass-badge.borderline{background:var(--gold-bg);border:1px solid var(--gold-dim);color:var(--gold)}
+
+.score-hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;text-align:center;margin-bottom:20px}
+.score-big{font-size:56px;font-weight:800;color:var(--gold);line-height:1}
+.score-max{font-size:22px;color:var(--ink-dim);font-weight:400}
+.score-sub{font-size:13px;color:var(--ink-dim);margin-top:8px}
+
+.section-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.section-breakdown{grid-template-columns:1fr}}
+.sec-score-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;text-align:center}
+.sec-score-card .ss-label{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700}
+.sec-score-card .ss-val{font-size:28px;font-weight:800}
+.sec-score-card .ss-raw{font-size:12px;color:var(--ink-dim);margin-top:4px}
+.sec-score-card .ss-bar{height:4px;background:var(--line);border-radius:2px;margin-top:10px;overflow:hidden}
+.sec-score-card .ss-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.sec-score-card.pass-sec .ss-val{color:var(--jade)}
+.sec-score-card.fail-sec .ss-val{color:var(--vermilion)}
+.sec-score-card.pass-sec .ss-fill{background:var(--jade)}
+.sec-score-card.fail-sec .ss-fill{background:var(--vermilion)}
+
+.results-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+.btn-result{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink);transition:all .15s}
+.btn-result:hover{background:var(--surface2);color:var(--ink)}
+.btn-result.primary{background:var(--indigo);border-color:var(--indigo);color:#fff}
+.btn-result.primary:hover{background:#8d9ef5}
+
+/* Answer review */
+.review-section{margin-bottom:32px}
+.review-section h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-dim);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.review-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:8px}
+.review-item.ri-correct{border-left:3px solid var(--jade)}
+.review-item.ri-wrong{border-left:3px solid var(--vermilion)}
+.ri-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.ri-num{font-size:11px;font-weight:700;color:var(--ink-dim);min-width:28px}
+.ri-q{font-size:13px;font-weight:600;flex:1;line-height:1.5}
+.ri-status{flex-shrink:0;font-size:12px;font-weight:700}
+.ri-correct .ri-status{color:var(--jade)}
+.ri-wrong .ri-status{color:var(--fail-text)}
+.ri-ans{font-size:12px;color:var(--ink-dim);margin-bottom:4px}
+.ri-ans span{font-weight:700}
+.ri-ans.correct-ans span{color:var(--jade)}
+.ri-ans.your-ans.wrong span{color:var(--fail-text)}
+.ri-explain{font-size:13px;color:var(--ink-dim);margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+
+/* History panel */
+.history-section{margin-bottom:28px}
+.history-section h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-dim);margin-bottom:12px}
+.history-list{display:flex;flex-direction:column;gap:8px}
+.hist-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.hist-date{font-size:12px;color:var(--ink-dim);min-width:80px}
+.hist-score{font-size:16px;font-weight:800;color:var(--gold)}
+.hist-detail{font-size:12px;color:var(--ink-dim)}
+.hist-badge{margin-left:auto;font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px}
+.hist-badge.pass{background:var(--jade-bg);color:var(--jade);border:1px solid var(--jade-dim)}
+.hist-badge.fail{background:var(--verm-bg);color:var(--fail-text);border:1px solid var(--verm-dim)}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #fff4;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+
+/* sentence-ordering layout */
+.order-table{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:14px;line-height:2}
+.star-slot{display:inline-block;background:var(--vermilion);color:#fff;border-radius:4px;padding:1px 8px;font-weight:700;font-size:12px;margin:0 2px}
+.word-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.word-chip{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:13px;font-family:var(--jp)}
+</style>
+</head>
+<body>
+
+<!-- Theme init (before paint to avoid flash) -->
+<script>(function(){var t=localStorage.getItem("n3.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
+
+<!-- Auth guard -->
+<script>
+try{
+  const s=JSON.parse(sessionStorage.getItem("n3_user_session")||"null");
+  const a=JSON.parse(sessionStorage.getItem("n3_admin_verified")||"null");
+  if(!s?.verified && !a?.verified) window.location.replace("login.html");
+}catch{window.location.replace("login.html");}
+</script>
+
+<!-- Header -->
+<header class="hdr">
+  <span class="hdr-brand jp">N3</span>
+  <span class="hdr-sub">Full Mock Test</span>
+  <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:15px;cursor:pointer;transition:all .15s;padding:0;flex-shrink:0">☀️</button>
+  <a href="n3-pass-engine.html" class="hdr-back">← Back to App</a>
+  <a href="dashboard.html" class="hdr-back" title="Dashboard">🏠</a>
+  <a href="n4-pass-engine.html" class="hdr-back" title="Switch to N4">⇄ N4</a>
+</header>
+
+<!-- SCREEN: LANDING -->
+<div class="screen active" id="screenLanding">
+  <div class="landing">
+    <h1><span class="jp">模擬試験</span> — JLPT N3 Full Mock Test</h1>
+    <p class="landing-sub">101 questions · 3 sections · Real JLPT N3 format · Scaled score out of 180</p>
+
+    <div class="info-grid">
+      <div class="info-box"><div class="ib-val">101</div><div class="ib-lbl">Questions</div></div>
+      <div class="info-box"><div class="ib-val">145</div><div class="ib-lbl">Minutes (Exam)</div></div>
+      <div class="info-box"><div class="ib-val">95<span style="font-size:14px;color:var(--ink-dim)">/180</span></div><div class="ib-lbl">Pass Score</div></div>
+    </div>
+
+    <div style="font-size:12px;color:var(--ink-dim);margin-bottom:18px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px">Select Test</div>
+    <div class="test-grid" id="testGrid"></div>
+
+    <div style="font-size:12px;color:var(--ink-dim);margin-bottom:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px">Select Mode</div>
+    <div class="mode-row">
+      <div class="mode-card exam selected" data-mode="exam" onclick="selectMode(this)">
+        <div class="mc-icon">⏱</div>
+        <div class="mc-title">Exam Mode</div>
+        <div class="mc-desc">Strict timers per section. Matches real JLPT conditions. See results only at the end.</div>
+      </div>
+      <div class="mode-card practice" data-mode="practice" onclick="selectMode(this)">
+        <div class="mc-icon">📖</div>
+        <div class="mc-title">Practice Mode</div>
+        <div class="mc-desc">No timer. See explanations immediately after each answer. Learn as you go.</div>
+      </div>
+    </div>
+
+    <div id="historyOnLanding" class="history-section" style="margin-bottom:28px"></div>
+
+    <button class="start-btn" id="startBtn" onclick="startTest()">Start Test</button>
+  </div>
+</div>
+
+<!-- SCREEN: TEST -->
+<div class="screen" id="screenTest">
+  <div class="test-layout">
+    <div class="test-topbar">
+      <div class="section-tabs">
+        <button class="sec-tab active" id="tabVocab">語彙</button>
+        <button class="sec-tab" id="tabGrammar">文法・読解</button>
+        <button class="sec-tab" id="tabListening">聴解</button>
+      </div>
+      <div class="timer-wrap" id="timerWrap" style="display:none">
+        <span class="timer-icon">⏱</span>
+        <span id="timerDisplay">30:00</span>
+      </div>
+      <div id="practiceLabel" style="margin-left:auto;font-size:11px;color:var(--indigo);font-weight:700;text-transform:uppercase;letter-spacing:1px">Practice Mode</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+
+    <div class="test-body">
+      <div id="questionArea"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: RESULTS -->
+<div class="screen" id="screenResults">
+  <div class="results">
+    <h1><span class="jp">結果</span> — Test Results</h1>
+    <div id="passBadge" class="pass-badge pass"></div>
+
+    <div class="score-hero">
+      <div><span class="score-big" id="totalScore">—</span><span class="score-max"> / 180</span></div>
+      <div class="score-sub">JLPT N3 Equivalent Score · Pass = 95/180 AND each section ≥ 19</div>
+    </div>
+
+    <div class="section-breakdown">
+      <div class="sec-score-card" id="cardVocab">
+        <div class="ss-label">語彙 (Vocabulary)</div>
+        <div class="ss-val" id="scoreVocab">—</div>
+        <div class="ss-raw" id="rawVocab">— / 35 correct</div>
+        <div class="ss-bar"><div class="ss-fill" id="fillVocab" style="width:0%"></div></div>
+      </div>
+      <div class="sec-score-card" id="cardGrammar">
+        <div class="ss-label">文法・読解 (Grammar+Reading)</div>
+        <div class="ss-val" id="scoreGrammar">—</div>
+        <div class="ss-raw" id="rawGrammar">— / 38 correct</div>
+        <div class="ss-bar"><div class="ss-fill" id="fillGrammar" style="width:0%"></div></div>
+      </div>
+      <div class="sec-score-card" id="cardListening">
+        <div class="ss-label">聴解 (Listening)</div>
+        <div class="ss-val" id="scoreListening">—</div>
+        <div class="ss-raw" id="rawListening">— / 28 correct</div>
+        <div class="ss-bar"><div class="ss-fill" id="fillListening" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-result primary" onclick="showReview()">Review Answers</button>
+      <button class="btn-result" onclick="goLanding()">Try Another Test</button>
+      <a href="n3-stats.html" class="btn-result">📊 My Stats</a>
+      <a href="n3-pass-engine.html" class="btn-result">Back to App</a>
+    </div>
+
+    <div id="reviewArea" style="display:none"></div>
+  </div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,arrayUnion}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+
+const FB={apiKey:"AIzaSyCDfc2n8sJfesrIwbWluTmjTnTsl_x46SQ",authDomain:"japanesen3passengine.firebaseapp.com",projectId:"japanesen3passengine",storageBucket:"japanesen3passengine.firebasestorage.app",messagingSenderId:"409024055518",appId:"1:409024055518:web:c1e74cb1cf64e50fc25a4f"};
+const app=initializeApp(FB);
+const db=getFirestore(app);
+const auth=getAuth(app);
+// Resolves with the signed-in user (or null); rules deny access without it.
+const authReady=new Promise(res=>{const stop=onAuthStateChanged(auth,u=>{stop();res(u);});});
+
+function getUsername(){
+  try{
+    const s=JSON.parse(sessionStorage.getItem("n3_user_session")||"null");
+    return s?.username||"guest";
+  }catch{return"guest";}
+}
+
+window._saveResult=async function(result){
+  const username=getUsername();
+  if(username==="guest")return;
+  if(!(await authReady))return;
+  try{
+    const ref=doc(db,"mock_scores",username);
+    const snap=await getDoc(ref);
+    if(snap.exists()){
+      await updateDoc(ref,{scores:arrayUnion(result)});
+    }else{
+      await setDoc(ref,{username,scores:[result]});
+    }
+  }catch(e){console.warn("[save score]",e);}
+};
+
+window._loadHistory=async function(){
+  const username=getUsername();
+  if(username==="guest")return[];
+  if(!(await authReady))return[];
+  try{
+    const snap=await getDoc(doc(db,"mock_scores",username));
+    return snap.exists()?snap.data().scores||[]:[];
+  }catch{return[];}
+};
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   QUESTION DATA — 101 Original N3-Level Questions
+   ═══════════════════════════════════════════════════════════ */
+
+// section: "vocab" | "grammar" | "listening"
+// type label shown to user
+// q: question text  pass: optional passage  opts: 4 options  ans: 0-based index  exp: explanation
+
+const TESTS=[{
+  id:"t1",
+  title:"Mock Test 1",
+  vocab:[
+    // 問題1 Kanji Reading (Q1-8)
+    {type:"漢字読み",q:"彼は今回のプロジェクトの<b>責任</b>を取ることになった。\n「責任」の読み方はどれか。",opts:["せきにん","せきしん","さくにん","さくしん"],ans:0,exp:"責任＝せきにん（responsibility）"},
+    {type:"漢字読み",q:"彼女の<b>意志</b>の強さに驚いた。\n「意志」の読み方はどれか。",opts:["いじ","いし","えし","えじ"],ans:1,exp:"意志＝いし（will, determination）"},
+    {type:"漢字読み",q:"問題の<b>原因</b>を詳しく調べている。\n「原因」の読み方はどれか。",opts:["げんにん","けんいん","げんいん","けんにん"],ans:2,exp:"原因＝げんいん（cause）"},
+    {type:"漢字読み",q:"新しい<b>技術</b>の開発に取り組んでいる。\n「技術」の読み方はどれか。",opts:["きじゅつ","ぎじゅつ","きじつ","ぎじつ"],ans:1,exp:"技術＝ぎじゅつ（technology / skill）"},
+    {type:"漢字読み",q:"会議の<b>内容</b>を報告書にまとめた。\n「内容」の読み方はどれか。",opts:["うちよう","うちかた","ないかた","ないよう"],ans:3,exp:"内容＝ないよう（contents）"},
+    {type:"漢字読み",q:"地球温暖化は重大な<b>環境</b>問題だ。\n「環境」の読み方はどれか。",opts:["かんけい","かんきょう","けんきょう","けんけい"],ans:1,exp:"環境＝かんきょう（environment）"},
+    {type:"漢字読み",q:"締め切りが迫り、みんな<b>焦って</b>いる。\n「焦って」の読み方はどれか。",opts:["こがって","かがって","あせって","いそいで"],ans:2,exp:"焦る＝あせる（to be flustered / impatient）"},
+    {type:"漢字読み",q:"彼の<b>提案</b>が会議で採用された。\n「提案」の読み方はどれか。",opts:["だいあん","ていあん","ていかん","だいかん"],ans:1,exp:"提案＝ていあん（proposal）"},
+    // 問題2 Orthography (Q9-14)
+    {type:"表記",q:"友達に新しいお店を（しょうかい）した。",opts:["消化","紹介","詳細","招会"],ans:1,exp:"紹介（しょうかい）＝introduction"},
+    {type:"表記",q:"会社の（けいえい）がうまくいっていない。",opts:["経営","経済","計営","契営"],ans:0,exp:"経営（けいえい）＝management / business operation"},
+    {type:"表記",q:"彼はチームの（しどう）をした。",opts:["支道","指動","指導","示道"],ans:2,exp:"指導（しどう）＝guidance / leadership"},
+    {type:"表記",q:"この問題は（ふくざつ）で、すぐには解決できない。",opts:["複雑","負担","不作","腐食"],ans:0,exp:"複雑（ふくざつ）＝complex"},
+    {type:"表記",q:"彼の話は（かんけつ）でわかりやすかった。",opts:["完決","管決","簡潔","感決"],ans:2,exp:"簡潔（かんけつ）＝concise"},
+    {type:"表記",q:"毎日（うんどう）することは健康に良い。",opts:["運動","運道","雲動","運同"],ans:0,exp:"運動（うんどう）＝exercise"},
+    // 問題3 Contextual Expressions (Q15-25)
+    {type:"文脈規定",q:"電車が遅れて、会議に（　　）してしまった。",opts:["遅刻","欠席","早退","延長"],ans:0,exp:"遅刻（ちこく）＝arriving late. 欠席＝absent, 早退＝leaving early, 延長＝extension"},
+    {type:"文脈規定",q:"長い（　　）の末に、問題がやっと解決した。",opts:["議論","会話","相談","発表"],ans:0,exp:"議論の末に＝after long discussion. 末に＝after/at the end of"},
+    {type:"文脈規定",q:"仕事のストレスで（　　）が続いており、医者に相談した。",opts:["不眠","不安","心配","困難"],ans:0,exp:"不眠（ふみん）＝insomnia. The doctor visit context fits a specific physical symptom"},
+    {type:"文脈規定",q:"彼は失敗を（　　）にして、より努力するようになった。",opts:["きっかけ","はじめ","もと","わけ"],ans:0,exp:"きっかけ＝trigger / starting point for change"},
+    {type:"文脈規定",q:"このプロジェクトには多くの（　　）が必要だ。",opts:["費用","収入","給料","利益"],ans:0,exp:"費用（ひよう）＝cost / expenses needed for a project"},
+    {type:"文脈規定",q:"話し合いの（　　）、両者は合意に達した。",opts:["結果","理由","方法","目的"],ans:0,exp:"〜の結果＝as a result of〜"},
+    {type:"文脈規定",q:"この店の商品は（　　）が高く、多くの客が訪れる。",opts:["評判","宣伝","広告","サービス"],ans:0,exp:"評判が高い＝has a high reputation"},
+    {type:"文脈規定",q:"先生に（　　）された通りに練習した。",opts:["指示","命令","要求","希望"],ans:0,exp:"指示された＝was instructed. Most natural in teacher-student context"},
+    {type:"文脈規定",q:"彼女は（　　）を持って仕事に取り組んでいる。",opts:["責任感","罪悪感","優越感","劣等感"],ans:0,exp:"責任感を持って＝with a sense of responsibility"},
+    {type:"文脈規定",q:"問題が（　　）したため、計画を見直すことになった。",opts:["発生","発展","発達","発見"],ans:0,exp:"発生（はっせい）＝occurred / arose. Problems 発生する"},
+    {type:"文脈規定",q:"彼は状況を（　　）的に判断することができる。",opts:["客観","主観","一般","全体"],ans:0,exp:"客観的（きゃっかんてき）＝objectively"},
+    // 問題4 Paraphrase (Q26-30)
+    {type:"言い換え",q:"「彼はなかなか腰が重い」の意味に最も近いものはどれか。",opts:["彼は体が不自由だ","彼はなかなか行動を起こさない","彼は動きが遅い","彼は体重が重い"],ans:1,exp:"腰が重い＝slow to act, reluctant to take action"},
+    {type:"言い換え",q:"「白黒をはっきりさせよう」の意味に最も近いものはどれか。",opts:["色について議論しよう","善悪・正否をはっきりさせよう","記録を整理しよう","秘密にしよう"],ans:1,exp:"白黒をはっきりさせる＝to clearly determine right from wrong"},
+    {type:"言い換え",q:"「あの先生は熱が入っている」の意味に最も近いものはどれか。",opts:["あの先生は体調が悪い","あの先生は授業に非常に熱心だ","あの先生はよく怒る","あの先生は人気がある"],ans:1,exp:"熱が入っている＝passionate / enthusiastic about something"},
+    {type:"言い換え",q:"「彼女は気が利く」の意味に最も近いものはどれか。",opts:["彼女は気が短い","彼女はよく気絶する","彼女は相手の必要なことをすぐに察して動ける","彼女は頭が良い"],ans:2,exp:"気が利く＝perceptive, considerate, quick to notice what others need"},
+    {type:"言い換え",q:"「締め切りが目の前に迫っている」の意味に最も近いものはどれか。",opts:["締め切りはまだ先だ","締め切りを確認している","締め切りがすぐそこまで近づいている","締め切りをなくすことができた"],ans:2,exp:"目の前に迫っている＝imminent, right in front of you"},
+    // 問題5 Usage (Q31-35)
+    {type:"用法",q:"「かえって」の使い方として正しいものはどれか。",opts:["助けようとしたが、かえって迷惑をかけてしまった","彼はかえって親切な人だ","電車はかえって遅れた","彼女はかえって来なかった"],ans:0,exp:"かえって＝on the contrary / making things worse. Used when an action backfires"},
+    {type:"用法",q:"「〜たびに」の使い方として正しいものはどれか。",opts:["日本に来るたびに、友達に会う","雨が降るたびに、昨日のことを思い出した","彼が話すたびに、もっと聞きたかった（past context wrong）","試験があるたびだから、勉強する（wrong structure）"],ans:0,exp:"〜たびに＝every time〜（habitual or repeated occurrence）"},
+    {type:"用法",q:"「〜てしまう」の使い方として正しいものはどれか。",opts:["宿題をしてしまったから、遊んでもいい","彼が来てしまうから、うれしい","春になってしまうと、花が咲く","多くの仕事がてしまう"],ans:0,exp:"〜てしまう＝completion of an action (often with nuance of finality or regret)"},
+    {type:"用法",q:"「〜ことになっている」の使い方として正しいものはどれか。",opts:["来週、東京に出張することになっている","毎朝起きることなっている","運動することがなっています","彼女は早く来ることはなっている"],ans:0,exp:"〜ことになっている＝it has been arranged/decided that〜 (fixed plan)"},
+    {type:"用法",q:"「によって」の使い方として正しいものはどれか。",opts:["国によって、文化が違う","電車によって、会社に行く","彼女によって、好きだ","すべてによって変わる"],ans:0,exp:"国によって〜＝depending on the country〜. によって＝by / due to / depending on"},
+  ],
+  grammar:[
+    // 問題1 Grammar Selection (Q36-48)
+    {type:"文法選択",q:"彼女が泣いているのを見て、何か悲しいことが（　　）に違いないと思った。",opts:["あった","あって","ある","あり"],ans:0,exp:"過去のことを強く推測するとき：〔past plain form〕+に違いない"},
+    {type:"文法選択",q:"健康の（　　）、毎日30分歩くようにしている。",opts:["ために","ように","から","もとで"],ans:0,exp:"〜のために＝for the sake of〜 (purpose/benefit)"},
+    {type:"文法選択",q:"子供の頃はよく海で泳いだ（　　）だ。",opts:["もの","こと","はず","わけ"],ans:0,exp:"〜たものだ＝used for nostalgic recollection of past habits"},
+    {type:"文法選択",q:"入院して初めて、健康の（　　）がわかった。",opts:["大切さ","大切","大切に","大切く"],ans:0,exp:"大切さ＝importance (adj stem + さ nominalizes the adjective)"},
+    {type:"文法選択",q:"彼は仕事が忙しい（　　）、毎日遅くまで働いている。",opts:["ために","ように","ながら","くせに"],ans:0,exp:"〜ために＝because (cause leading to result)"},
+    {type:"文法選択",q:"料理が（　　）なるように、毎日練習している。",opts:["上手に","上手","上手さに","上手く"],ans:0,exp:"上手になるように＝in order to become skilled. 上手に＝skillfully (adverbial form)"},
+    {type:"文法選択",q:"彼女は病気（　　）、出席した。",opts:["にもかかわらず","なので","だから","ために"],ans:0,exp:"〜にもかかわらず＝despite / in spite of (expected result didn't happen)"},
+    {type:"文法選択",q:"このレストランは値段の（　　）、料理の量が多い。",opts:["わりに","おかげで","ために","くせに"],ans:0,exp:"〜のわりに＝considering / for the price (contrast between expectation and reality)"},
+    {type:"文法選択",q:"先生が説明している（　　）に、生徒から質問が来た。",opts:["ところ","あいだ","あと","まえ"],ans:0,exp:"〜ているところに＝while in the middle of doing something, something else happened"},
+    {type:"文法選択",q:"彼（　　）謝られたのに、まだ怒っている。",opts:["に","から","で","を"],ans:1,exp:"〜から謝られる＝to be apologized to by〜. The passive verb requires から for the agent in this context"},
+    {type:"文法選択",q:"あの映画はもう一度（　　）ほど面白かった。",opts:["見たい","見る","見て","見ている"],ans:0,exp:"〜たいほど＝so much that I want to〜 (degree expression)"},
+    {type:"文法選択",q:"会議が長引いた（　　）、夕食の時間に間に合わなかった。",opts:["ため","ながら","まま","ところ"],ans:0,exp:"〜ため＝because / due to (cause and result)"},
+    {type:"文法選択",q:"彼女は何も言わない（　　）、突然仕事を辞めた。",opts:["まま","ところ","たびに","うちに"],ans:0,exp:"〜ないまま＝without doing〜 / while still in a state of not having done〜"},
+    // 問題2 Sentence Ordering (Q49-53)
+    {type:"文の組み立て",q:"次の文の ★ の位置に入る言葉を選びなさい。\n「私は日本語を（　）（★）（　）（　）と思っている。」\n並べ替える語：もっと／練習する／必要が／あると",opts:["もっと","練習する","必要が","あると"],ans:0,exp:"正しい順序：日本語を「もっと」「練習する」「必要が」「あると」思っている。★は1番目＝もっと"},
+    {type:"文の組み立て",q:"次の文の ★ の位置に入る言葉を選びなさい。\n「その問題を（　）（　）（★）（　）した。」\n並べ替える語：みんなで／話し合い／ことに／解決する",opts:["みんなで","話し合い","ことに","解決する"],ans:2,exp:"正しい順序：「みんなで」「話し合い」「ことに」「解決する」→ ★は3番目＝ことに"},
+    {type:"文の組み立て",q:"次の文の ★ の位置に入る言葉を選びなさい。\n「彼女は（　）（★）（　）（　）みんなに好かれている。」\n並べ替える語：とても／明るい／性格が／だから",opts:["とても","明るい","性格が","だから"],ans:2,exp:"正しい順序：「とても」「明るい」「性格が」「だから」→ ★は3番目＝性格が"},
+    {type:"文の組み立て",q:"次の文の ★ の位置に入る言葉を選びなさい。\n「新しい政策が（　）（★）（　）（　）いる。」\n並べ替える語：実施された／ことが／問題に／なって",opts:["実施された","ことが","問題に","なって"],ans:1,exp:"正しい順序：「実施された」「ことが」「問題に」「なって」いる → ★は2番目＝ことが"},
+    {type:"文の組み立て",q:"次の文の ★ の位置に入る言葉を選びなさい。\n「彼は約束を（　）（　）（★）（　）した。」\n並べ替える語：なかなか／守る／ことが／できなく",opts:["なかなか","守る","ことが","できなく"],ans:2,exp:"正しい順序：「なかなか」「守る」「ことが」「できなく」した → ★は3番目＝ことが"},
+    // 問題3 Text Grammar (Q54-57)
+    {type:"文章の文法",pass:"現代の日本では、少子化が大きな社会問題（54）なっています。子供の数が（55）、学校の数も減っています。政府はこの問題を解決（56）、さまざまな政策を打ち出しています。しかし、（57）解決できるか、まだわかりません。",q:"（54）に入る言葉はどれか。",opts:["に","が","を","は"],ans:0,exp:"「問題になっています」＝has become a problem. に＋なる is fixed"},
+    {type:"文章の文法",pass:"現代の日本では、少子化が大きな社会問題（54）なっています。子供の数が（55）、学校の数も減っています。政府はこの問題を解決（56）、さまざまな政策を打ち出しています。しかし、（57）解決できるか、まだわかりません。",q:"（55）に入る言葉はどれか。",opts:["減るとともに","減ったあとに","減るまでに","減ってからは"],ans:0,exp:"〜とともに＝as〜 / together with〜 (simultaneous progression)"},
+    {type:"文章の文法",pass:"現代の日本では、少子化が大きな社会問題（54）なっています。子供の数が（55）、学校の数も減っています。政府はこの問題を解決（56）、さまざまな政策を打ち出しています。しかし、（57）解決できるか、まだわかりません。",q:"（56）に入る言葉はどれか。",opts:["するために","するように","したから","したため"],ans:0,exp:"〜するために＝in order to〜 (purpose). Subject and purpose clause share the same subject"},
+    {type:"文章の文法",pass:"現代の日本では、少子化が大きな社会問題（54）なっています。子供の数が（55）、学校の数も減っています。政府はこの問題を解決（56）、さまざまな政策を打ち出しています。しかし、（57）解決できるか、まだわかりません。",q:"（57）に入る言葉はどれか。",opts:["いつ","なぜ","どこで","だれが"],ans:0,exp:"「いつ解決できるか」＝when it can be resolved. Context asks about the timeline"},
+    // 問題4 Short Reading (Q58-61)
+    {type:"短文読解",pass:"田中さんは毎朝6時に起きて、30分間ジョギングをする。その後、シャワーを浴びて朝ごはんを食べてから、7時半に家を出る。電車の中では本を読むことが多い。会社には8時15分に着く。このような規則正しい生活が、田中さんの健康の秘訣だと言われている。",q:"田中さんは何時に家を出ますか。",opts:["6時","6時半","7時半","8時15分"],ans:2,exp:"「7時半に家を出る」と書いてある"},
+    {type:"短文読解",pass:"田中さんは毎朝6時に起きて、30分間ジョギングをする。その後、シャワーを浴びて朝ごはんを食べてから、7時半に家を出る。電車の中では本を読むことが多い。会社には8時15分に着く。このような規則正しい生活が、田中さんの健康の秘訣だと言われている。",q:"この文章のテーマは何ですか。",opts:["電車の中での過ごし方","田中さんの健康的な生活習慣","朝食の大切さ","規則正しい睡眠"],ans:1,exp:"全体のテーマは田中さんの規則正しい生活と健康の秘訣"},
+    {type:"短文読解",pass:"当店では、来月から新しいサービスを開始いたします。ポイントカード会員のお客様は、お買い上げ金額の5%のポイントが貯まります。貯まったポイントは次回のお買い物から使えます。詳しくは店頭スタッフまでお尋ねください。なお、このサービスはポイントカード会員のお客様のみ対象となります。",q:"この新しいサービスはいつから始まりますか。",opts:["今日から","来月から","来週から","すぐに"],ans:1,exp:"「来月から新しいサービスを開始」と書いてある"},
+    {type:"短文読解",pass:"当店では、来月から新しいサービスを開始いたします。ポイントカード会員のお客様は、お買い上げ金額の5%のポイントが貯まります。貯まったポイントは次回のお買い物から使えます。詳しくは店頭スタッフまでお尋ねください。なお、このサービスはポイントカード会員のお客様のみ対象となります。",q:"このサービスを利用できるのは誰ですか。",opts:["すべての客","大きな買い物をした客","ポイントカード会員の客","スタッフに相談した客"],ans:2,exp:"「ポイントカード会員のお客様のみ対象」と明記されている"},
+    // 問題5 Medium Reading (Q62-67)
+    {type:"中文読解",pass:"近年、日本では在宅勤務（テレワーク）が急速に普及しています。感染症の影響で多くの企業が導入しましたが、その後も続けている会社が増えています。テレワークの利点としては、通勤時間の削減、自分のペースで仕事ができること、子育てや介護と仕事の両立がしやすいことなどが挙げられます。一方、課題もあります。仕事とプライベートの境界が曖昧になったり、同僚とのコミュニケーションが減ったりするという問題が指摘されています。また、自宅に適切な作業環境がない人にとっては、仕事の効率が下がることもあります。",q:"テレワーク普及のきっかけとして文章で述べられているものはどれか。",opts:["インターネットの発達","感染症の影響","政府の政策","企業の経費削減"],ans:1,exp:"「感染症の影響で多くの企業が導入した」と書いてある"},
+    {type:"中文読解",pass:"近年、日本では在宅勤務（テレワーク）が急速に普及しています。感染症の影響で多くの企業が導入しましたが、その後も続けている会社が増えています。テレワークの利点としては、通勤時間の削減、自分のペースで仕事ができること、子育てや介護と仕事の両立がしやすいことなどが挙げられます。一方、課題もあります。仕事とプライベートの境界が曖昧になったり、同僚とのコミュニケーションが減ったりするという問題が指摘されています。また、自宅に適切な作業環境がない人にとっては、仕事の効率が下がることもあります。",q:"テレワークの利点として述べられていないものはどれか。",opts:["通勤時間が短くなる","子育てと仕事を両立しやすい","給料が増える","自分のペースで仕事できる"],ans:2,exp:"給料が増えるとは文章に書かれていない"},
+    {type:"中文読解",pass:"近年、日本では在宅勤務（テレワーク）が急速に普及しています。感染症の影響で多くの企業が導入しましたが、その後も続けている会社が増えています。テレワークの利点としては、通勤時間の削減、自分のペースで仕事ができること、子育てや介護と仕事の両立がしやすいことなどが挙げられます。一方、課題もあります。仕事とプライベートの境界が曖昧になったり、同僚とのコミュニケーションが減ったりするという問題が指摘されています。また、自宅に適切な作業環境がない人にとっては、仕事の効率が下がることもあります。",q:"テレワークの問題点として述べられているものはどれか。",opts:["仕事の量が増える","仕事とプライベートの区別が難しくなる","テレワーク機器が高い","上司との関係が悪くなる"],ans:1,exp:"「仕事とプライベートの境界が曖昧になる」という問題が指摘されている"},
+    {type:"中文読解",pass:"日本の食文化において、「もったいない」という概念は非常に重要な役割を果たしています。「もったいない」とは、物を粗末にすることへの反省と、物を大切にする気持ちを表す言葉です。この考え方は食事においても現れており、残り物を使って新しい料理を作る文化があります。また、食材を最後まで使い切ろうとする姿勢も、「もったいない」精神の表れです。近年、この概念は世界的な環境問題への関心の高まりとともに、海外でも注目されるようになっています。",q:"「もったいない」はどのような気持ちを表していますか。",opts:["物を収集したい気持ち","物を大切にしたい気持ち","物を買いたい気持ち","物を交換したい気持ち"],ans:1,exp:"「物を大切にする気持ち」と文章で明記されている"},
+    {type:"中文読解",pass:"日本の食文化において、「もったいない」という概念は非常に重要な役割を果たしています。「もったいない」とは、物を粗末にすることへの反省と、物を大切にする気持ちを表す言葉です。この考え方は食事においても現れており、残り物を使って新しい料理を作る文化があります。また、食材を最後まで使い切ろうとする姿勢も、「もったいない」精神の表れです。近年、この概念は世界的な環境問題への関心の高まりとともに、海外でも注目されるようになっています。",q:"「もったいない」が海外でも注目される理由は何ですか。",opts:["日本食が世界で人気になったから","日本のアニメが広まったから","世界的に環境問題への関心が高まったから","海外旅行をする日本人が増えたから"],ans:2,exp:"「世界的な環境問題への関心の高まりとともに」と書いてある"},
+    {type:"中文読解",pass:"日本の食文化において、「もったいない」という概念は非常に重要な役割を果たしています。「もったいない」とは、物を粗末にすることへの反省と、物を大切にする気持ちを表す言葉です。この考え方は食事においても現れており、残り物を使って新しい料理を作る文化があります。また、食材を最後まで使い切ろうとする姿勢も、「もったいない」精神の表れです。近年、この概念は世界的な環境問題への関心の高まりとともに、海外でも注目されるようになっています。",q:"文章で「もったいない」の実践例として挙げられているものはどれか。",opts:["食べ物を買わない","残り物で新しい料理を作る","食材を冷凍保存する","食べる量を減らす"],ans:1,exp:"「残り物を使って新しい料理を作る文化がある」と具体例が示されている"},
+    // 問題6 Long Reading (Q68-71)
+    {type:"長文読解",pass:"スマートフォンが普及した現代において、人々の読書習慣は大きく変わってきています。電子書籍やSNSの利用が増えたことで、紙の本を読む人が減少していると言われていますが、実際のところはどうでしょうか。\n\nある調査によると、日本人が本を読む時間は確かに減っています。特に若い世代では、動画コンテンツや短い文章のSNSを好む傾向があります。しかし一方で、電子書籍の市場は年々拡大しており、本を読むこと自体は続けているが、その形が変わっているとも言えます。\n\n読書には多くのメリットがあります。語彙力や読解力を高めるだけでなく、他者への共感力や想像力を養うことにもつながります。また、集中して一冊の本を読み終えることで、達成感も得られます。\n\nデジタル化が進む社会においても、読書という行為の価値は変わらないでしょう。大切なのは、紙か電子かという形式ではなく、読むこと自体を楽しむ習慣を維持することではないでしょうか。",q:"この文章のテーマは何ですか。",opts:["電子書籍の販売方法","スマートフォンの問題点","現代における読書習慣の変化と読書の価値","SNSと教育の関係"],ans:2,exp:"文章全体は読書習慣の変化と、それでも読書に価値があることを論じている"},
+    {type:"長文読解",pass:"スマートフォンが普及した現代において、人々の読書習慣は大きく変わってきています。電子書籍やSNSの利用が増えたことで、紙の本を読む人が減少していると言われていますが、実際のところはどうでしょうか。\n\nある調査によると、日本人が本を読む時間は確かに減っています。特に若い世代では、動画コンテンツや短い文章のSNSを好む傾向があります。しかし一方で、電子書籍の市場は年々拡大しており、本を読むこと自体は続けているが、その形が変わっているとも言えます。\n\n読書には多くのメリットがあります。語彙力や読解力を高めるだけでなく、他者への共感力や想像力を養うことにもつながります。また、集中して一冊の本を読み終えることで、達成感も得られます。\n\nデジタル化が進む社会においても、読書という行為の価値は変わらないでしょう。大切なのは、紙か電子かという形式ではなく、読むこと自体を楽しむ習慣を維持することではないでしょうか。",q:"若い世代の傾向として正しいものはどれか。",opts:["紙の本をよく読む","電子書籍しか読まない","動画や短い文章のSNSを好む","読書時間が増えている"],ans:2,exp:"「若い世代では、動画コンテンツや短い文章のSNSを好む傾向がある」と書いてある"},
+    {type:"長文読解",pass:"スマートフォンが普及した現代において、人々の読書習慣は大きく変わってきています。電子書籍やSNSの利用が増えたことで、紙の本を読む人が減少していると言われていますが、実際のところはどうでしょうか。\n\nある調査によると、日本人が本を読む時間は確かに減っています。特に若い世代では、動画コンテンツや短い文章のSNSを好む傾向があります。しかし一方で、電子書籍の市場は年々拡大しており、本を読むこと自体は続けているが、その形が変わっているとも言えます。\n\n読書には多くのメリットがあります。語彙力や読解力を高めるだけでなく、他者への共感力や想像力を養うことにもつながります。また、集中して一冊の本を読み終えることで、達成感も得られます。\n\nデジタル化が進む社会においても、読書という行為の価値は変わらないでしょう。大切なのは、紙か電子かという形式ではなく、読むこと自体を楽しむ習慣を維持することではないでしょうか。",q:"読書のメリットとして述べられていないものはどれか。",opts:["語彙力が高まる","共感力が育つ","成績が上がる","達成感が得られる"],ans:2,exp:"成績が上がるとは文章に書かれていない"},
+    {type:"長文読解",pass:"スマートフォンが普及した現代において、人々の読書習慣は大きく変わってきています。電子書籍やSNSの利用が増えたことで、紙の本を読む人が減少していると言われていますが、実際のところはどうでしょうか。\n\nある調査によると、日本人が本を読む時間は確かに減っています。特に若い世代では、動画コンテンツや短い文章のSNSを好む傾向があります。しかし一方で、電子書籍の市場は年々拡大しており、本を読むこと自体は続けているが、その形が変わっているとも言えます。\n\n読書には多くのメリットがあります。語彙力や読解力を高めるだけでなく、他者への共感力や想像力を養うことにもつながります。また、集中して一冊の本を読み終えることで、達成感も得られます。\n\nデジタル化が進む社会においても、読書という行為の価値は変わらないでしょう。大切なのは、紙か電子かという形式ではなく、読むこと自体を楽しむ習慣を維持することではないでしょうか。",q:"筆者が最も伝えたいことは何ですか。",opts:["電子書籍の利用を増やすべきだ","若者はもっと本を読むべきだ","デジタル時代でも読書の習慣を大切にすること","紙の本の方が電子書籍より良い"],ans:2,exp:"最終段落「読むこと自体を楽しむ習慣を維持すること」が筆者の主張"},
+    // 問題7 Information Retrieval (Q72-73)
+    {type:"情報検索",pass:"【日本語能力試験（JLPT）受験案内】\n試験日：2025年12月7日（日）\n申込期間：9月1日〜9月30日\n受験料：N1 9,500円 / N2 8,500円 / N3 4,500円 / N4・N5 4,000円\n試験会場：全国47都道府県\n合格基準：総合得点 95点以上（180点満点）/ 各セクション19点以上\n※申込みはインターネットのみ\n※受験票は試験日の2週間前に送付\n※当日は受験票と写真付き身分証明書が必要",q:"N3の受験料はいくらですか。",opts:["3,500円","4,000円","4,500円","5,000円"],ans:2,exp:"受験案内に「N3 4,500円」と明記されている"},
+    {type:"情報検索",pass:"【日本語能力試験（JLPT）受験案内】\n試験日：2025年12月7日（日）\n申込期間：9月1日〜9月30日\n受験料：N1 9,500円 / N2 8,500円 / N3 4,500円 / N4・N5 4,000円\n試験会場：全国47都道府県\n合格基準：総合得点 95点以上（180点満点）/ 各セクション19点以上\n※申込みはインターネットのみ\n※受験票は試験日の2週間前に送付\n※当日は受験票と写真付き身分証明書が必要",q:"試験当日に必要なものはどれですか。",opts:["受験票のみ","パスポートのみ","受験票と写真付き身分証明書","申込確認書と受験票"],ans:2,exp:"「受験票と写真付き身分証明書が必要」と明記されている"},
+  ],
+  listening:[
+    // 問題1 Task-based (Q74-79)
+    {type:"課題理解",pass:"〔男〕：すみません、駅はどこですか？\n〔女〕：この道をまっすぐ行って、信号を左に曲がると右側にあります。\n〔男〕：ありがとうございます。歩いてどのくらいかかりますか？\n〔女〕：10分くらいです。",q:"男の人はこれからどうしますか。",opts:["バスに乗る","まっすぐ行って左に曲がって駅を探す","タクシーを呼ぶ","地図を調べる"],ans:1,exp:"女の人が「まっすぐ行って、信号を左に曲がると右側にある」と教えた"},
+    {type:"課題理解",pass:"〔女〕：部長、明日の会議の資料なんですが、印刷してもらえますか？\n〔男〕：ごめん、今日中にメールで送ってくれれば、明日の朝印刷しておくよ。\n〔女〕：わかりました。今すぐ送ります。",q:"女の人はこれから何をしますか。",opts:["会議の資料を印刷する","部長に電話する","資料をメールで送る","明日の朝早く来る"],ans:2,exp:"「今すぐ送ります」と女の人が言っている"},
+    {type:"課題理解",pass:"〔男〕：先生、レポートを来週の月曜日までに提出しなければなりませんか？\n〔女〕：はい、来週の月曜日までに私のメールアドレスに送ってください。参考文献は3つ以上使ってください。\n〔男〕：わかりました。",q:"男の学生はレポートについて何をしなければなりませんか。",opts:["月曜日に先生の部屋に持っていく","来週の月曜日までに先生にメールで送る","3つの本を読む","クラスメートと一緒に作る"],ans:1,exp:"「来週の月曜日までに私のメールアドレスに送ってください」と先生が指示した"},
+    {type:"課題理解",pass:"〔女〕：もしもし、田中ですが、山田さんはいらっしゃいますか？\n〔男〕：あいにくただ今外出しております。3時ごろ戻る予定ですが、伝言を承りましょうか？\n〔女〕：はい、では、明日の打ち合わせは2時から3時に変更になったとお伝えください。\n〔男〕：承知しました。",q:"男の人はこれから何をしますか。",opts:["山田さんに電話する","田中さんに電話する","山田さんが戻ったら伝言を伝える","打ち合わせの時間を変更する"],ans:2,exp:"伝言を受け取ったので、山田さんが戻ったら伝える"},
+    {type:"課題理解",pass:"〔男〕：このパソコン、動きが遅くて困っているんだけど。\n〔女〕：不要なファイルを削除してみたら？それでもダメなら再起動してみて。\n〔男〕：やってみたけど、まだ遅い。\n〔女〕：じゃあ、サポートセンターに電話してみた方がいいかもしれない。",q:"男の人はこれから何をしますか。",opts:["ファイルを削除する","パソコンを再起動する","サポートセンターに電話する","新しいパソコンを買う"],ans:2,exp:"ファイル削除と再起動をすでに試みた。次のステップはサポートセンターへの電話"},
+    {type:"課題理解",pass:"〔女〕：来月の出張の飛行機、もう予約しましたか？\n〔男〕：いや、まだです。早く予約した方がいいですよね。\n〔女〕：そうですね。1ヶ月前だと席が取れないこともありますよ。\n〔男〕：わかりました。今日中に予約します。",q:"男の人はこれから何をしますか。",opts:["来月出張する","今日中に飛行機を予約する","女の人に予約を頼む","来月まで待ってから予約する"],ans:1,exp:"「今日中に予約します」と男の人が言っている"},
+    // 問題2 Key point (Q80-85)
+    {type:"ポイント理解",pass:"〔女〕：田中くん、先週の発表、良かったね。\n〔男〕：ありがとう。でも、データの説明が少し長すぎたと思う。\n〔女〕：そう？私はわかりやすかったと思ったけど。発表の始め方が特に良かったよ。\n〔男〕：本当に？それは良かった。",q:"男の人は自分の発表について何が問題だったと思っていますか。",opts:["声が小さかった","データの説明が長すぎた","発表の始め方が悪かった","準備が足りなかった"],ans:1,exp:"「データの説明が少し長すぎた」と男の人自身が言っている"},
+    {type:"ポイント理解",pass:"〔男〕：このホテルはどうですか？朝食込みで一泊8000円です。\n〔女〕：駅から遠くない？\n〔男〕：バスで10分ですね。でも、もっと駅に近いところがありますよ。一泊12000円ですが。\n〔女〕：じゃあ、少し高くても駅に近い方がいいわね。",q:"女の人はどのホテルを選びますか。",opts:["8000円の駅から遠いホテル","12000円の駅に近いホテル","朝食のないホテル","まだ決めていない"],ans:1,exp:"「少し高くても駅に近い方がいい」と女の人が言っている"},
+    {type:"ポイント理解",pass:"〔女〕：佐藤さんって、なんであんなに人気があるんだろう。\n〔男〕：いつも笑顔で、誰にでも親切だからじゃないかな。仕事もできるし。\n〔女〕：でも、私は彼の冗談がちょっと苦手で...\n〔男〕：そうかな。僕はあの冗談が好きだけど。",q:"佐藤さんが人気がある理由として男の人が言ったのはどれですか。",opts:["冗談が面白い","いつも笑顔で親切で仕事ができる","背が高くてかっこいい","よく人の相談に乗る"],ans:1,exp:"「いつも笑顔で、誰にでも親切。仕事もできる」と男の人が説明している"},
+    {type:"ポイント理解",pass:"〔男〕：すみません、このケーキ一個いくらですか？\n〔女〕：こちらは500円、あちらは350円になります。\n〔男〕：じゃあ、安い方を3個ください。\n〔女〕：ありがとうございます。全部で1050円です。",q:"男の人はいくら払いますか。",opts:["500円","1000円","1050円","1500円"],ans:2,exp:"350円×3個＝1050円"},
+    {type:"ポイント理解",pass:"〔女〕：田中さん、最近どうですか？元気そうですね。\n〔男〕：おかげさまで。先月から新しい趣味を始めたんですよ。\n〔女〕：どんな趣味ですか？\n〔男〕：写真撮影です。週末に公園や山に行って撮っています。",q:"田中さんが最近始めた趣味は何ですか。",opts:["登山","絵を描くこと","写真撮影","ガーデニング"],ans:2,exp:"「写真撮影です」と田中さんが答えている"},
+    {type:"ポイント理解",pass:"〔女〕：明日の遠足ですが、雨の場合はどうなりますか？\n〔男〕：天気予報によると曇りですが、万が一雨の場合は中止になります。その場合は当日の朝7時に連絡します。\n〔女〕：わかりました。晴れるといいですね。\n〔男〕：そうですね。雨でなければ、9時に学校に集まってください。",q:"遠足が中止になった場合、連絡はいつ来ますか。",opts:["前日の夜","当日の朝7時","当日の朝9時","連絡は来ない"],ans:1,exp:"「当日の朝7時に連絡します」と男の人が言っている"},
+    // 問題3 Overview (Q86-88)
+    {type:"概要理解",pass:"〔アナウンス〕皆さん、今日から新しい学期が始まります。今学期は、これまで習ってきた文法の復習と、会話の練習を中心に進めていきます。また、毎週金曜日には小テストを行いますので、その週に学んだことをしっかり復習しておいてください。わからないことがあれば、遠慮なく質問してください。では、始めましょう。",q:"先生は何について話していますか。",opts:["試験の注意事項","今学期の授業の進め方","宿題の提出方法","成績の評価基準"],ans:1,exp:"授業の内容、小テストの予定など、今学期の授業の進め方を説明している"},
+    {type:"概要理解",pass:"〔ラジオ〕現代の若者の食生活について、最近の調査では、朝食を食べない人の割合が増えていることがわかりました。朝食を抜くと、集中力が低下したり、太りやすくなったりすることが医学的に証明されています。バランスの良い食事を心がけ、朝食をしっかり食べることで、1日を元気に過ごすことができます。",q:"このラジオ放送の主な内容は何ですか。",opts:["現代の食品の安全性","若者の朝食の欠食とその影響","ダイエット方法","運動と食事の関係"],ans:1,exp:"朝食を食べない若者が増えていることとその悪影響がテーマ"},
+    {type:"概要理解",pass:"〔お知らせ〕来週の土曜日に地域の清掃活動があります。午前9時に市民公園の正門に集まってください。ゴミ袋と軍手は主催者が用意しますが、動きやすい服装でお越しください。雨天の場合は翌週に延期します。参加ご希望の方は、来週の水曜日までに市役所にご連絡ください。",q:"このお知らせの主な目的は何ですか。",opts:["清掃活動への参加者を募集すること","公園の施設を紹介すること","ゴミの分別方法を説明すること","市役所のイベントを案内すること"],ans:0,exp:"清掃活動への参加者を募集するお知らせ"},
+    // 問題4 Verbal Expressions (Q89-92)
+    {type:"発話表現",q:"「それはちょっと...」と言われたら、相手はどう思っていますか。",opts:["もっと説明してほしい","断りたいが直接言いにくい","とても賛成している","もう少し時間が必要だ"],ans:1,exp:"「ちょっと...」は日本語の婉曲な断り表現。直接断ることを避けている"},
+    {type:"発話表現",q:"友達に「もう少し早く言ってくれれば良かったのに」と言われた。友達はどう思っていますか。",opts:["あなたがもっと早く来るべきだった","あなたが事前に知らせなかったことに不満がある","あなたに感謝している","あなたにもっと話してほしい"],ans:1,exp:"「〜てくれれば良かったのに」＝後悔や不満を表す表現"},
+    {type:"発話表現",q:"会議で「お言葉ですが...」という表現はどんな時に使いますか。",opts:["相手の言葉に感謝するとき","相手の意見に反論したいとき","相手に謝るとき","相手を褒めるとき"],ans:1,exp:"「お言葉ですが」＝礼儀正しく相手の意見に反論するときの丁寧表現"},
+    {type:"発話表現",q:"上司に「一応確認しておきたいのですが...」と言った。この後に何が続きますか。",opts:["会議を終了する提案","確認したいことの質問","資料を配る","会議の決定を覆す"],ans:1,exp:"「一応確認したい」＝質問や確認事項を述べる前の前置き表現"},
+    // 問題5 Quick Response (Q93-101)
+    {type:"即時応答",q:"「このレポート、明日までに終わりますか？」",opts:["はい、ぜひ終わりましょう","なんとか間に合わせます","はい、昨日終わりました","いいえ、始めていません"],ans:1,exp:"「なんとか間に合わせます」が最も自然な応答"},
+    {type:"即時応答",q:"「電車が遅れているんですが、少し待ってもらえますか？」",opts:["はい、ゆっくりどうぞ","いいえ、電車は遅れていません","ありがとう、電車に乗ります","そうですか、残念です"],ans:0,exp:"「ゆっくりどうぞ」が「待ってもらえますか」への自然な了承応答"},
+    {type:"即時応答",q:"「部長、ご報告があるのですが、今よろしいでしょうか？」",opts:["はい、少し待ってください","ありがとうございます","田中部長は今外出中です","報告書を提出してください"],ans:0,exp:"「今よろしいでしょうか」への自然な返答は「少し待ってください」など"},
+    {type:"即時応答",q:"「山田さん、先ほどの会議、お疲れ様でした。」",opts:["ありがとうございます。お疲れ様でした","申し訳ありません","よろしくお願いします","それはちょっと..."],ans:0,exp:"「お疲れ様でした」への自然な返答は「お疲れ様でした」または感謝の言葉"},
+    {type:"即時応答",q:"「このお菓子、どうぞ。」",opts:["それはたいへんですね","ありがとうございます。いただきます","はい、ぜひお願いします","よろしくお願いします"],ans:1,exp:"「いただきます」が食べ物を受け取るときの最も自然な応答"},
+    {type:"即時応答",q:"「明日の朝、早起きできる？」",opts:["はい、6時に起きられます","いいえ、夜早く寝ます","そうですね、明日は休みです","はい、でも昨日は眠れませんでした"],ans:0,exp:"「早起きできる？」への直接的な答えは「はい、〜時に起きられます」"},
+    {type:"即時応答",q:"「このメール、鈴木さんにも転送してもらえる？」",opts:["はい、すぐに転送します","はい、受信しました","鈴木さんはメールを持っていません","転送は難しいです"],ans:0,exp:"「〜してもらえる？」への了承の返答は「はい、すぐにします」"},
+    {type:"即時応答",q:"「部長、これでよろしいでしょうか？」",opts:["はい、けっこうです","ありがとうございます","よろしくお願いします","あなたはよくできます"],ans:0,exp:"「よろしいでしょうか」への承認は「はい、けっこうです」または「はい、問題ありません」"},
+    {type:"即時応答",q:"「締め切りまで1週間しかないよ。」",opts:["そうですか、では来週また話しましょう","えっ、そんなに少ないんですか。急がないと","はい、締め切りはいつですか？","わかりました、2週間でやります"],ans:1,exp:"残り時間が少ないと言われたら「急がないと」が最も自然な反応"},
+  ]
+}];
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════ */
+let selectedTest=TESTS[0];
+let selectedMode="exam"; // "exam" | "practice"
+let currentSection=0; // 0=vocab,1=grammar,2=listening
+let currentQ=0;
+let userAnswers={vocab:[],grammar:[],listening:[]};
+let sectionNames=["vocab","grammar","listening"];
+let timerInterval=null;
+let timerSeconds=0;
+let testStarted=false;
+const SECTION_TIMES=[30*60,70*60,45*60]; // seconds
+const SECTION_COUNTS=[35,38,28];
+
+/* ═══════════════════════════════════════════════════════════
+   LANDING
+   ═══════════════════════════════════════════════════════════ */
+function init(){
+  buildTestGrid();
+  loadHistoryOnLanding();
+}
+
+function buildTestGrid(){
+  const grid=document.getElementById("testGrid");
+  grid.innerHTML="";
+  TESTS.forEach((t,i)=>{
+    const hist=getLocalHistory(t.id);
+    const best=hist.length?Math.max(...hist.map(h=>h.total)):null;
+    const card=document.createElement("div");
+    card.className="test-card"+(i===0?" selected":"");
+    card.dataset.id=t.id;
+    card.onclick=()=>selectTest(card,t);
+    card.innerHTML=`<div class="tc-tag">JLPT N3</div>
+      <div class="tc-check">${i===0?"✓":""}</div>
+      <div class="tc-title">${t.title}</div>
+      <div class="tc-meta">101 questions · Vocab 35 · Grammar+Reading 38 · Listening 28</div>
+      ${best!==null?`<div class="tc-history">Best: ${best}/180 · ${hist.length} attempt${hist.length>1?"s":""}</div>`:""}`;
+    grid.appendChild(card);
+  });
+}
+
+function selectTest(card,t){
+  document.querySelectorAll(".test-card").forEach(c=>{c.classList.remove("selected");c.querySelector(".tc-check").textContent="";});
+  card.classList.add("selected");
+  card.querySelector(".tc-check").textContent="✓";
+  selectedTest=t;
+}
+window.selectMode=function(card){
+  document.querySelectorAll(".mode-card").forEach(c=>c.classList.remove("selected"));
+  card.classList.add("selected");
+  selectedMode=card.dataset.mode;
+};
+
+async function loadHistoryOnLanding(){
+  const local=getLocalHistory(selectedTest?.id||"t1");
+  let all=local;
+  try{const remote=await window._loadHistory();if(remote.length>all.length)all=remote;}catch{}
+  renderHistoryOnLanding(all);
+}
+
+function renderHistoryOnLanding(hist){
+  const el=document.getElementById("historyOnLanding");
+  if(!hist||!hist.length){el.innerHTML="";return;}
+  const sorted=[...hist].sort((a,b)=>b.ts-a.ts).slice(0,5);
+  el.innerHTML=`<h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-dim);margin-bottom:12px">Recent Attempts</h3>
+    <div class="history-list">${sorted.map(h=>`
+      <div class="hist-item">
+        <span class="hist-date">${new Date(h.ts).toLocaleDateString("en-GB",{day:"2-digit",month:"short"})}</span>
+        <span class="hist-score">${h.total}/180</span>
+        <span class="hist-detail">${h.mode==="exam"?"⏱ Exam":"📖 Practice"} · V:${h.vs} G:${h.gs} L:${h.ls}</span>
+        <span class="hist-badge ${h.pass?"pass":"fail"}">${h.pass?"PASS":"FAIL"}</span>
+      </div>`).join("")}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TEST ENGINE
+   ═══════════════════════════════════════════════════════════ */
+window.startTest=function(){
+  if(!selectedTest)return;
+  currentSection=0;currentQ=0;
+  userAnswers={vocab:Array(35).fill(null),grammar:Array(38).fill(null),listening:Array(28).fill(null)};
+  testStarted=true;
+  showScreen("screenTest");
+  updateTabUI();
+  renderQuestion();
+  if(selectedMode==="exam"){
+    document.getElementById("timerWrap").style.display="flex";
+    document.getElementById("practiceLabel").style.display="none";
+    startTimer(SECTION_TIMES[0]);
+  }else{
+    document.getElementById("timerWrap").style.display="none";
+    document.getElementById("practiceLabel").style.display="block";
+  }
+};
+
+function startTimer(seconds){
+  clearInterval(timerInterval);
+  timerSeconds=seconds;
+  updateTimerDisplay();
+  timerInterval=setInterval(()=>{
+    timerSeconds--;
+    updateTimerDisplay();
+    if(timerSeconds<=0){
+      clearInterval(timerInterval);
+      autoAdvanceSection();
+    }
+  },1000);
+}
+
+function updateTimerDisplay(){
+  const m=Math.floor(timerSeconds/60).toString().padStart(2,"0");
+  const s=(timerSeconds%60).toString().padStart(2,"0");
+  const el=document.getElementById("timerDisplay");
+  el.textContent=`${m}:${s}`;
+  el.classList.toggle("warn",timerSeconds<=300);
+}
+
+function autoAdvanceSection(){
+  if(currentSection<2){
+    currentSection++;currentQ=0;
+    updateTabUI();
+    renderSectionBreak();
+    if(selectedMode==="exam") startTimer(SECTION_TIMES[currentSection]);
+  }else{
+    finishTest();
+  }
+}
+
+function getQuestions(){
+  const k=sectionNames[currentSection];
+  return selectedTest[k];
+}
+
+function updateTabUI(){
+  ["Vocab","Grammar","Listening"].forEach((n,i)=>{
+    const tab=document.getElementById("tab"+n);
+    tab.classList.toggle("active",i===currentSection);
+    tab.classList.toggle("done",i<currentSection);
+  });
+  const total=SECTION_COUNTS.slice(0,currentSection).reduce((a,b)=>a+b,0)+currentQ;
+  document.getElementById("progressBar").style.width=(total/101*100)+"%";
+}
+
+function renderSectionBreak(){
+  const names=["語彙 (Vocabulary)","文法・読解 (Grammar+Reading)","聴解 (Listening)"];
+  const prev=currentSection-1;
+  const prevAnswers=userAnswers[sectionNames[prev]];
+  const prevQs=selectedTest[sectionNames[prev]];
+  const correct=prevAnswers.filter((a,i)=>a===prevQs[i].ans).length;
+  const area=document.getElementById("questionArea");
+  area.innerHTML=`<div class="section-break">
+    <h2>Section ${prev+1} Complete</h2>
+    <p>${names[prev]}: <strong>${correct}/${prevQs.length}</strong> correct</p>
+    <p style="margin-bottom:16px;color:var(--ink-dim);font-size:13px">Next: ${names[currentSection]}</p>
+    <button class="btn-nav primary" onclick="renderQuestion()">Start Next Section →</button>
+  </div>`;
+}
+
+function renderQuestion(){
+  const qs=getQuestions();
+  if(currentQ>=qs.length){
+    if(currentSection<2){
+      currentSection++;currentQ=0;
+      updateTabUI();
+      renderSectionBreak();
+      if(selectedMode==="exam"){clearInterval(timerInterval);startTimer(SECTION_TIMES[currentSection]);}
+    }else{
+      finishTest();
+    }
+    return;
+  }
+  updateTabUI();
+  const q=qs[currentQ];
+  const secKey=sectionNames[currentSection];
+  const answered=userAnswers[secKey][currentQ];
+  const isPractice=selectedMode==="practice";
+  const qNum=SECTION_COUNTS.slice(0,currentSection).reduce((a,b)=>a+b,0)+currentQ+1;
+
+  let passHTML="";
+  if(q.pass){
+    passHTML=`<div class="passage-box jp-text">${q.pass.replace(/\n/g,"<br>")}</div>`;
+  }
+
+  const optsHTML=q.opts.map((o,i)=>{
+    let cls="opt";
+    if(answered!==null){
+      if(i===q.ans) cls+=" correct";
+      else if(i===answered) cls+=" wrong";
+    }else if(answered===i) cls+=" selected";
+    return `<button class="${cls}" data-idx="${i}" onclick="selectAnswer(${i})" ${answered!==null&&!isPractice?" disabled":""}>
+      <span class="opt-num">${i+1}</span>
+      <span class="opt-text jp">${o}</span>
+    </button>`;
+  }).join("");
+
+  const explainHTML=isPractice&&answered!==null
+    ?`<div class="explain-box show"><strong>解説：</strong> ${q.exp}</div>`
+    :`<div class="explain-box" id="explainBox"></div>`;
+
+  const area=document.getElementById("questionArea");
+  area.innerHTML=`
+    <div class="q-num">Q${qNum} / 101</div>
+    <div class="q-type-tag">${q.type}</div>
+    ${passHTML}
+    <div class="q-text jp">${q.q.replace(/\n/g,"<br>")}</div>
+    <div class="opts" id="optsContainer">${optsHTML}</div>
+    ${explainHTML}
+    <div class="test-nav">
+      <button class="btn-nav" onclick="prevQ()" ${currentQ===0&&currentSection===0?"disabled":""}>← Prev</button>
+      <button class="btn-nav primary" id="nextBtn" onclick="nextQ()">${isLastQ()?"Finish":"Next →"}</button>
+      <span class="q-counter">${currentQ+1} / ${qs.length}</span>
+    </div>`;
+}
+
+function isLastQ(){
+  return currentSection===2&&currentQ===selectedTest.listening.length-1;
+}
+
+window.selectAnswer=function(idx){
+  const secKey=sectionNames[currentSection];
+  userAnswers[secKey][currentQ]=idx;
+  const qs=getQuestions();
+  const q=qs[currentQ];
+  const isPractice=selectedMode==="practice";
+
+  // Update opt styles
+  document.querySelectorAll(".opt").forEach((btn,i)=>{
+    btn.classList.remove("selected","correct","wrong");
+    if(i===q.ans) btn.classList.add("correct");
+    else if(i===idx) btn.classList.add("wrong");
+    btn.disabled=true;
+  });
+
+  if(isPractice){
+    const eb=document.getElementById("explainBox");
+    if(eb){eb.innerHTML=`<strong>解説：</strong> ${q.exp}`;eb.classList.add("show");}
+  }
+  // update next button label
+  const nb=document.getElementById("nextBtn");
+  if(nb) nb.textContent=isLastQ()?"Finish":"Next →";
+};
+
+window.nextQ=function(){
+  currentQ++;
+  if(currentQ>=getQuestions().length){
+    if(currentSection<2){
+      currentSection++;currentQ=0;
+      updateTabUI();
+      renderSectionBreak();
+      if(selectedMode==="exam"){clearInterval(timerInterval);startTimer(SECTION_TIMES[currentSection]);}
+    }else{
+      finishTest();
+    }
+  }else{
+    renderQuestion();
+  }
+};
+
+window.prevQ=function(){
+  if(currentQ>0){currentQ--;renderQuestion();}
+  else if(currentSection>0){currentSection--;currentQ=getQuestions().length-1;updateTabUI();renderQuestion();}
+};
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTS
+   ═══════════════════════════════════════════════════════════ */
+function finishTest(){
+  clearInterval(timerInterval);
+  const vQ=selectedTest.vocab,gQ=selectedTest.grammar,lQ=selectedTest.listening;
+  const vC=userAnswers.vocab.filter((a,i)=>a===vQ[i].ans).length;
+  const gC=userAnswers.grammar.filter((a,i)=>a===gQ[i].ans).length;
+  const lC=userAnswers.listening.filter((a,i)=>a===lQ[i].ans).length;
+
+  // Scale to 0-60 per section
+  const vS=Math.round(vC/35*60);
+  const gS=Math.round(gC/38*60);
+  const lS=Math.round(lC/28*60);
+  const total=vS+gS+lS;
+  const pass=total>=95&&vS>=19&&gS>=19&&lS>=19;
+
+  // Save
+  const result={ts:Date.now(),testId:selectedTest.id,total,vs:vS,gs:gS,ls:lS,pass,mode:selectedMode,vc:vC,gc:gC,lc:lC};
+  saveLocalHistory(selectedTest.id,result);
+  try{window._saveResult&&window._saveResult(result);}catch{}
+
+  // Render results screen
+  showScreen("screenResults");
+  document.getElementById("totalScore").textContent=total;
+
+  const badge=document.getElementById("passBadge");
+  if(pass){badge.className="pass-badge pass";badge.innerHTML="✓ PASS — おめでとうございます！";}
+  else if(total>=80){badge.className="pass-badge borderline";badge.innerHTML="⚠ Close — あと少し！";}
+  else{badge.className="pass-badge fail";badge.innerHTML="✗ Not yet — もっと練習しましょう";}
+
+  renderSecCard("Vocab",vS,vC,35,"fillVocab","scoreVocab","rawVocab","cardVocab");
+  renderSecCard("Grammar",gS,gC,38,"fillGrammar","scoreGrammar","rawGrammar","cardGrammar");
+  renderSecCard("Listening",lS,lC,28,"fillListening","scoreListening","rawListening","cardListening");
+}
+
+function renderSecCard(name,scaled,raw,total,fillId,scoreId,rawId,cardId){
+  document.getElementById(scoreId).textContent=scaled+"/60";
+  document.getElementById(rawId).textContent=raw+" / "+total+" correct";
+  const pct=Math.round(scaled/60*100);
+  setTimeout(()=>{document.getElementById(fillId).style.width=pct+"%";},100);
+  const pass=scaled>=19;
+  document.getElementById(cardId).classList.toggle("pass-sec",pass);
+  document.getElementById(cardId).classList.toggle("fail-sec",!pass);
+}
+
+window.showReview=function(){
+  const area=document.getElementById("reviewArea");
+  area.style.display="block";
+  area.innerHTML="";
+  [["語彙 (Vocabulary)","vocab",selectedTest.vocab],
+   ["文法・読解 (Grammar+Reading)","grammar",selectedTest.grammar],
+   ["聴解 (Listening)","listening",selectedTest.listening]].forEach(([label,key,qs])=>{
+    const sec=document.createElement("div");
+    sec.className="review-section";
+    let html=`<h3>${label}</h3>`;
+    qs.forEach((q,i)=>{
+      const ua=userAnswers[key][i];
+      const correct=ua===q.ans;
+      const offset=key==="vocab"?0:key==="grammar"?35:73;
+      html+=`<div class="review-item ${correct?"ri-correct":"ri-wrong"}">
+        <div class="ri-head">
+          <span class="ri-num">Q${offset+i+1}</span>
+          <span class="ri-q jp">${q.q.replace(/<b>/g,"").replace(/<\/b>/g,"").replace(/\n.*/,"")}</span>
+          <span class="ri-status">${correct?"✓":"✗"}</span>
+        </div>
+        <div class="ri-ans your-ans ${correct?"":"wrong"}">Your answer: <span>${ua!==null?q.opts[ua]:"No answer"}</span></div>
+        ${!correct?`<div class="ri-ans correct-ans">Correct: <span>${q.opts[q.ans]}</span></div>`:""}
+        <div class="ri-explain">${q.exp}</div>
+      </div>`;
+    });
+    sec.innerHTML=html;
+    area.appendChild(sec);
+  });
+  area.scrollIntoView({behavior:"smooth"});
+};
+
+window.goLanding=function(){
+  clearInterval(timerInterval);
+  testStarted=false;
+  showScreen("screenLanding");
+  buildTestGrid();
+  loadHistoryOnLanding();
+};
+
+/* ═══════════════════════════════════════════════════════════
+   LOCAL HISTORY
+   ═══════════════════════════════════════════════════════════ */
+function getLocalHistory(testId){
+  try{return JSON.parse(localStorage.getItem("n3mock_"+testId)||"[]");}catch{return[];}
+}
+function saveLocalHistory(testId,result){
+  try{
+    const h=getLocalHistory(testId);
+    h.push(result);
+    localStorage.setItem("n3mock_"+testId,JSON.stringify(h.slice(-20)));
+  }catch{}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILS
+   ═══════════════════════════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+init();
+</script>
+<script>
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme")||"dark";
+  var n=c==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",n);
+  document.documentElement.classList.toggle("light-mode",n==="light");
+  localStorage.setItem("n3.theme",n);
+  var btn=document.getElementById("themeToggle");
+  if(btn)btn.textContent=n==="dark"?"☀️":"🌙";
+}
+(function(){
+  var t=document.documentElement.getAttribute("data-theme")||"dark";
+  var btn=document.getElementById("themeToggle");
+  if(btn)btn.textContent=t==="dark"?"☀️":"🌙";
+})();
+</script>
+</body>
+</html>

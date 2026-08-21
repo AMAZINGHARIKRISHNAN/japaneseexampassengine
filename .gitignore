@@ -1,0 +1,28 @@
+node_modules/
+
+.firebase/
+.firebase-debug.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+.env
+.env.*
+
+.DS_Store
+Thumbs.db
+
+.claude/settings.local.json
+
+
+# Firebase service-account keys and migration backups (contain secrets)
+*service-account*.json
+serviceAccountKey*.json
+backups/
+*.local.txt
+
+# Source textbooks (large scans, copyrighted — keep out of git)
+*.pdf
+
+# Generated at deploy time by scripts/stamp-version.mjs
+public/version.json

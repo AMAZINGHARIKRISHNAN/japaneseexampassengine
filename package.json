@@ -1,0 +1,17 @@
+{
+  "name": "japanese-jlpt-pass-engine",
+  "version": "1.4.0",
+  "private": true,
+  "description": "JLPT N3/N4 study web app — Firebase Hosting + Firestore",
+  "scripts": {
+    "stamp": "node scripts/stamp-version.mjs",
+    "check": "node .github/scripts/check-scripts.mjs public",
+    "deploy": "firebase deploy"
+  },
+  "dependencies": {
+    "firebase": "^12.15.0"
+  },
+  "devDependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}

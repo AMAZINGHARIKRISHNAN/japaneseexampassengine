@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Students authenticate through Firebase Auth as <username>@STUDENT_DOMAIN,
+    // where the username is derived from their full name and the password is
+    // derived from their date of birth (see login.html). Firebase Auth stores
+    // the credential — nothing password-shaped is ever written to Firestore.
+    //
+    // The admin authenticates with a real email and is recognised by having a
+    // doc in the admins/ collection (created by scripts/manage-auth.mjs).
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    // Two tiers: an `owner` may grant and revoke admin access; a plain `admin`
+    // has every monitoring and student-management power but cannot change who
+    // is an admin. Legacy docs without a role are treated as plain admins, so a
+    // missing field can never silently confer the higher tier.
+    function isOwner() {
+      return isAdmin()
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'owner';
+    }
+    function isUser(username) {
+      return signedIn()
+        && request.auth.token.email == username + '@students.japanesen3passengine.app';
+    }
+    // Deleting the users/{username} profile doc revokes all data access even
+    // if the Auth credential still exists (orphaned account).
+    function userExists(username) {
+      return exists(/databases/$(database)/documents/users/$(username));
+    }
+
+    // Admin allowlist. Owners may grant and revoke admin access from the
+    // dashboard; everything below is written so that the worst a compromised
+    // admin session can do is nothing at all.
+    match /admins/{uid} {
+      // Anyone signed in may check their own record (that is how each page
+      // decides where to send you). Admins may read the whole roster.
+      allow get:  if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+
+      // Granting: owner only, and only ever at the 'admin' tier. The owner tier
+      // is deliberately unreachable from a browser — it is granted exclusively
+      // by scripts/manage-auth.mjs, which needs the service-account key. That
+      // keeps "who can create owners" tied to something an attacker with a
+      // stolen session does not have.
+      allow create: if isOwner()
+        && request.resource.data.role == 'admin'
+        && request.resource.data.uid == uid
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'email', 'displayName', 'username', 'role', 'grantedAt', 'grantedBy']);
+
+      // An owner cannot edit their own record (no self-demotion, no accidental
+      // lock-out) and cannot touch another owner's record from the browser.
+      allow update: if isOwner()
+        && uid != request.auth.uid
+        && resource.data.role != 'owner'
+        && request.resource.data.role == 'admin'
+        && request.resource.data.uid == uid;
+
+      // Same protections on revoke: never yourself, never another owner. The
+      // last owner therefore cannot be removed by anything short of the CLI.
+      allow delete: if isOwner()
+        && uid != request.auth.uid
+        && resource.data.role != 'owner';
+    }
+
+    // Student profiles. Sign-up is self-serve: the moment the Auth account is
+    // created the student writes their own profile here and can study straight
+    // away — no admin approval step. The create rule pins the doc to the
+    // caller's own identity and allowlists the fields, so a student cannot
+    // invent a profile for someone else or smuggle extra data in.
+    match /users/{username} {
+      allow get:  if isAdmin() || isUser(username);
+      allow list, delete: if isAdmin();
+
+      allow create: if isAdmin()
+        || (isUser(username)
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.username == username
+            && request.resource.data.fullName is string
+            && request.resource.data.fullName.size() > 0
+            && request.resource.data.fullName.size() <= 80
+            && request.resource.data.keys().hasOnly(
+                 ['username', 'fullName', 'uid', 'status', 'createdAt', 'createdBy', 'lastLogin']));
+
+      // Students may only touch their own lastLogin timestamp
+      allow update: if isAdmin()
+        || (isUser(username)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']));
+    }
+
+    // Sign-in audit trail. Only a signed-in account may append, only about
+    // itself, and only with allowlisted fields of bounded size. This is what
+    // keeps anonymous clients from injecting arbitrary strings that the admin
+    // dashboard would later render.
+    match /login_log/{entry} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(
+             ['username', 'fullName', 'userType', 'status', 'site', 'timestamp'])
+        && request.resource.data.username is string
+        && request.resource.data.username.size() <= 40
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() <= 80
+        && request.resource.data.status   in ['granted', 'registered']
+        && request.resource.data.userType in ['user', 'super_admin']
+        && request.resource.data.site     in ['n3', 'n4']
+        && (isUser(request.resource.data.username) || isAdmin());
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Mock-test scores — each student reads/writes only their own
+    match /mock_scores/{username} {
+      allow read, write: if isAdmin() || (isUser(username) && userExists(username));
+    }
+    match /mock_scores_n4/{username}/attempts/{attempt} {
+      allow read, write: if isAdmin() || (isUser(username) && userExists(username));
+    }
+
+    // Study progress + chosen exam dates, mirrored from the engines' local
+    // state so it follows a student between devices. Kept out of users/ so the
+    // admin's account listing doesn't drag every student's full state with it.
+    match /progress/{username} {
+      allow read, write: if isAdmin() || (isUser(username) && userExists(username));
+    }
+
+    // Retired collections. Everything below is closed rather than deleted, so a
+    // stale client cannot resurrect a collection the app no longer understands:
+    //   registration_requests  — the old admin approval queue
+    //   admin_security*        — the device-fingerprint registry
+    //   users_n4 / login_log_n4 — pre-merge N4 duplicates
+    match /registration_requests/{document} { allow read, write: if false; }
+    match /admin_security/{document}        { allow read, write: if false; }
+    match /admin_security_n4/{document}     { allow read, write: if false; }
+    match /users_n4/{document}              { allow read, write: if false; }
+    match /login_log_n4/{document}          { allow read, write: if false; }
+  }
+}

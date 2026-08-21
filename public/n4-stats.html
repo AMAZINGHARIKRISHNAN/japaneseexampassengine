@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>N4 Stats — 日本語N4</title>
+<style>
+:root{
+  --bg:#12131a;--bg2:#0d0e14;--surface:#1b1d28;--surface2:#222533;
+  --line:#2e3242;--ink:#ece8df;--ink-dim:#a6a8b6;--ink-faint:#8a8d9e;
+  --jade:#5fc28a;--jade-dim:#2c6347;--jade-bg:#16241c;
+  --vermilion:#e2553f;--verm-dim:#5c2a23;--verm-bg:#2a1413;
+  --gold:#d8af52;--gold-bg:#2a2410;--gold-dim:#5a4a20;
+  --indigo:#7c8cf0;--indigo-dim:#363c6e;--indigo-bg:#1a1d35;
+  --rose:#e07ba1;--fail-text:#f08080;--hdr-bg:#0d0e14ee;
+  --radius:14px;
+  --jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","Meiryo","Noto Sans JP",sans-serif;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f5f4f0;--bg2:#eae8e2;--surface:#ffffff;--surface2:#f0ede7;
+  --line:#d4d0c8;--ink:#1c1d26;--ink-dim:#525468;--ink-faint:#888a9a;
+  --jade:#1a7040;--jade-dim:#a8dfc0;--jade-bg:#eaf7f0;
+  --vermilion:#c03020;--verm-dim:#f5c5be;--verm-bg:#fdf0ee;
+  --gold:#8a6610;--gold-bg:#fdf4e0;--gold-dim:#d4aa44;
+  --indigo:#3d50d8;--indigo-dim:#c8cef8;--indigo-bg:#eef0fd;
+  --rose:#b04570;--fail-text:#c03020;--hdr-bg:#f5f4f0ee;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);min-height:100vh;padding-top:58px;line-height:1.6}
+button{font-family:inherit;cursor:pointer;color:var(--ink)}
+a{color:var(--indigo);text-decoration:none}
+.jp{font-family:var(--jp)}
+header{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:var(--hdr-bg);border-bottom:1px solid var(--line);backdrop-filter:blur(10px);display:flex;align-items:center;gap:14px;padding:0 20px}
+.hdr-brand{font-family:var(--jp);font-size:20px;font-weight:800;color:var(--vermilion);text-decoration:none}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-back{font-size:13px;color:var(--ink-dim);border:1px solid var(--line);border-radius:8px;padding:5px 11px;background:var(--surface);text-decoration:none}
+.hdr-back:hover{color:var(--ink);border-color:var(--ink-faint)}
+.theme-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;width:34px;height:34px;display:grid;place-items:center;font-size:15px;color:var(--ink)}
+.theme-btn:hover{border-color:var(--ink-faint)}
+.page{max-width:900px;margin:0 auto;padding:28px 20px 80px}
+h2{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--ink)}
+.section-block{margin-bottom:28px}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:640px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi-card .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:6px}
+.kpi-card .kpi-val{font-size:32px;font-weight:800;line-height:1}
+.kpi-card .kpi-sub{font-size:12px;margin-top:4px}
+.kpi-card.indigo .kpi-label{color:var(--indigo)}
+.kpi-card.indigo .kpi-val{color:var(--indigo)}
+.kpi-card.jade .kpi-label{color:var(--jade)}
+.kpi-card.jade .kpi-val{color:var(--jade)}
+.kpi-card.gold .kpi-label{color:var(--gold)}
+.kpi-card.gold .kpi-val{color:var(--gold)}
+.kpi-card.vermilion .kpi-label{color:var(--vermilion)}
+.kpi-card.vermilion .kpi-val{color:var(--vermilion)}
+.kpi-card .kpi-sub{color:var(--ink-faint)}
+
+/* Chart */
+.chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:28px}
+.chart-title{font-size:14px;font-weight:600;color:var(--ink-dim);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.chart-area{position:relative;height:140px;display:flex;align-items:flex-end;gap:3px}
+.chart-pass-line{position:absolute;left:0;right:0;border-top:1.5px dashed var(--jade-dim);pointer-events:none}
+.chart-pass-label{position:absolute;right:4px;font-size:10px;color:var(--jade);font-weight:700}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.bar-fill{width:100%;max-width:28px;border-radius:4px 4px 0 0;transition:height .4s;cursor:default;position:relative}
+.bar-fill:hover::after{content:attr(title);position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line);padding:3px 7px;border-radius:6px;font-size:11px;white-space:nowrap;color:var(--ink);pointer-events:none;z-index:10}
+.bar-label{font-size:9px;color:var(--ink-faint);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
+.chart-legend{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--ink-dim)}
+.legend-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px}
+
+/* Section perf */
+.sec-perf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:560px){.sec-perf-grid{grid-template-columns:1fr}}
+.sec-perf-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.sec-perf-card .spc-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.sec-perf-card.vocab .spc-name{color:var(--jade)}
+.sec-perf-card.grammar .spc-name{color:var(--indigo)}
+.sec-perf-card.listening .spc-name{color:var(--gold)}
+.spc-score{font-size:28px;font-weight:800;line-height:1;margin-bottom:4px}
+.sec-perf-card.vocab .spc-score{color:var(--jade)}
+.sec-perf-card.grammar .spc-score{color:var(--indigo)}
+.sec-perf-card.listening .spc-score{color:var(--gold)}
+.spc-label{font-size:12px;color:var(--ink-faint);margin-bottom:10px}
+.spc-bar{height:6px;background:var(--surface2);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.spc-bar i{display:block;height:100%;border-radius:10px}
+.sec-perf-card.vocab .spc-bar i{background:var(--jade)}
+.sec-perf-card.grammar .spc-bar i{background:var(--indigo)}
+.sec-perf-card.listening .spc-bar i{background:var(--gold)}
+.weak-flag{font-size:12px;color:var(--vermilion);background:var(--verm-bg);border:1px solid var(--verm-dim);border-radius:6px;padding:4px 8px;margin-top:6px}
+.strong-flag{font-size:12px;color:var(--jade);background:var(--jade-bg);border:1px solid var(--jade-dim);border-radius:6px;padding:4px 8px;margin-top:6px}
+
+/* Focus Areas */
+.focus-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.focus-card h4{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.focus-card p{font-size:13px;color:var(--ink-dim);line-height:1.5}
+.focus-card .tip-link{color:var(--indigo);font-weight:600;text-decoration:none}
+.focus-card .tip-link:hover{text-decoration:underline}
+.focus-card.weak{border-left:3px solid var(--vermilion)}
+.focus-card.ok{border-left:3px solid var(--jade)}
+
+/* Achievements */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:28px}
+.badge{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;transition:border-color .15s}
+.badge.earned{border-color:var(--gold);background:var(--gold-bg)}
+.badge .badge-ico{font-size:28px;margin-bottom:6px}
+.badge .badge-name{font-size:12px;font-weight:700;margin-bottom:3px;color:var(--ink)}
+.badge .badge-desc{font-size:11px;color:var(--ink-faint);line-height:1.4}
+.badge.locked .badge-ico{opacity:.3;filter:grayscale(1)}
+.badge.locked .badge-name{color:var(--ink-faint)}
+
+/* History table */
+.history-wrap{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:28px}
+.history-wrap h3{padding:14px 18px;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink-dim);display:flex;align-items:center;gap:10px}
+.history-wrap h3 .clear-btn{margin-left:auto;font-size:12px;color:var(--vermilion);background:var(--verm-bg);border:1px solid var(--verm-dim);border-radius:6px;padding:4px 10px;cursor:pointer}
+.history-wrap h3 .clear-btn:hover{filter:brightness(1.1)}
+table.htbl{width:100%;border-collapse:collapse;font-size:13px}
+table.htbl th{padding:9px 12px;text-align:left;background:var(--surface2);color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+table.htbl td{padding:9px 12px;border-top:1px solid var(--line);color:var(--ink);vertical-align:middle}
+.chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block}
+.chip.pass{background:var(--jade-bg);color:var(--jade);border:1px solid var(--jade-dim)}
+.chip.fail{background:var(--verm-bg);color:var(--vermilion);border:1px solid var(--verm-dim)}
+.chip.exam{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-dim)}
+.chip.practice{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-dim)}
+.empty-state{padding:32px;text-align:center;color:var(--ink-faint);font-size:14px}
+
+/* Footer links */
+.footer-links{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.footer-links{grid-template-columns:1fr}}
+.footer-link{display:block;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--ink);transition:border-color .15s}
+.footer-link:hover{border-color:var(--ink-faint)}
+.footer-link .fl-title{font-size:15px;font-weight:700;margin-bottom:3px}
+.footer-link .fl-sub{font-size:12px;color:var(--ink-faint)}
+.footer-link.jade-link{border-color:var(--jade-dim);background:var(--jade-bg)}
+.footer-link.jade-link .fl-title{color:var(--jade)}
+.footer-link.gold-link{border-color:var(--gold-dim);background:var(--gold-bg)}
+.footer-link.gold-link .fl-title{color:var(--gold)}
+</style>
+</head>
+<body>
+<script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
+<script>(function(){function v(k){try{return JSON.parse(sessionStorage.getItem(k)||"null")?.verified===true;}catch{return false;}}if(!v("n3_user_session")&&!v("n3_admin_verified"))location.replace("login.html");})();</script>
+
+<header>
+  <a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
+  <span style="font-size:14px;color:var(--ink-dim);font-weight:500">Stats & Progress</span>
+  <div class="hdr-right">
+    <a class="hdr-back" href="n4-pass-engine.html">← Pass Engine</a>
+    <a class="hdr-back" href="dashboard.html" title="Dashboard">🏠</a>
+    <a class="hdr-back" href="n3-pass-engine.html" title="Switch to N3">⇄ N3</a>
+    <button class="theme-btn" id="themeBtn">☀</button>
+  </div>
+</header>
+
+<div class="page">
+  <div id="kpiGrid" class="kpi-grid"></div>
+  <div class="chart-wrap section-block">
+    <div class="chart-title">📈 Score Trend <span style="font-size:12px;color:var(--ink-faint);font-weight:400">— last 20 attempts</span></div>
+    <div id="chartArea" class="chart-area"></div>
+    <div class="chart-legend">
+      <span><span class="legend-dot" style="background:var(--jade)"></span>Pass</span>
+      <span><span class="legend-dot" style="background:var(--vermilion)"></span>Fail</span>
+      <span style="color:var(--jade)">— Pass line (90)</span>
+    </div>
+  </div>
+  <div id="secPerfGrid" class="sec-perf-grid"></div>
+  <div class="section-block">
+    <h2>🎯 Focus Areas</h2>
+    <div id="focusAreas"></div>
+  </div>
+  <div class="section-block">
+    <h2>🏅 Achievements</h2>
+    <div class="badges-grid" id="badgesGrid"></div>
+  </div>
+  <div class="history-wrap section-block">
+    <h3>📋 Full History <button class="clear-btn" onclick="clearHistory()">🗑 Clear Local</button></h3>
+    <div id="historyBody"></div>
+  </div>
+  <div class="footer-links">
+    <a class="footer-link jade-link" href="n4-mock-test.html">
+      <div class="fl-title">📋 Take a Mock Test</div>
+      <div class="fl-sub">115 questions · Exam &amp; Practice mode</div>
+    </a>
+    <a class="footer-link gold-link" href="n4-boost.html">
+      <div class="fl-title">⚡ Quick Drills</div>
+      <div class="fl-sub">Targeted practice by question type</div>
+    </a>
+  </div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import {getFirestore,collection,getDocs,orderBy,query}
+  from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import {getAuth,onAuthStateChanged}
+  from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+
+const FB = initializeApp({
+  apiKey:"AIzaSyCDfc2n8sJfesrIwbWluTmjTnTsl_x46SQ",
+  authDomain:"japanesen3passengine.firebaseapp.com",
+  projectId:"japanesen3passengine"
+});
+const db = getFirestore(FB);
+const auth = getAuth(FB);
+// Resolves with the signed-in user (or null); rules deny reads without it.
+const authReady = new Promise(res=>{const stop=onAuthStateChanged(auth,u=>{stop();res(u);});});
+
+function getUsername(){
+  try{return JSON.parse(sessionStorage.getItem("n3_user_session")).username;}catch(e){return "guest";}
+}
+
+// Theme
+document.getElementById("themeBtn").onclick = () => {
+  const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme",t);
+  document.documentElement.classList.toggle("light-mode",t==="light");
+  localStorage.setItem("n4.theme",t);
+  document.getElementById("themeBtn").textContent = t==="dark"?"☀":"🌙";
+};
+(()=>{const t=localStorage.getItem("n4.theme")||"dark";document.getElementById("themeBtn").textContent=t==="dark"?"☀":"🌙";})();
+
+// Load history from localStorage + Firebase
+async function loadAll() {
+  let hist = JSON.parse(localStorage.getItem("n4mock_t1")||"[]");
+  // Try Firebase too
+  try {
+    const username = getUsername();
+    if(username==="guest" || !(await authReady)) throw new Error("not signed in");
+    const q = query(collection(db,"mock_scores_n4",username,"attempts"), orderBy("ts","desc"));
+    const snap = await getDocs(q);
+    if(!snap.empty) {
+      const fbData = snap.docs.map(d=>{
+        const r=d.data();
+        return {...r, ts: r.ts?.toMillis ? r.ts.toMillis() : Date.now()};
+      });
+      // Merge: FB is authoritative, but keep any local entries not in FB by ts
+      const fbTs = new Set(fbData.map(r=>r.ts));
+      const localOnly = hist.filter(h=>!fbTs.has(h.ts));
+      hist = [...fbData, ...localOnly].sort((a,b)=>b.ts-a.ts);
+    }
+  } catch(e){ /* use local */ }
+  render(hist);
+}
+
+function render(hist) {
+  const n = hist.length;
+  if(!n) {
+    ["kpiGrid","chartArea","secPerfGrid","focusAreas","badgesGrid","historyBody"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = `<div class="empty-state">No test history yet. <a href="n4-mock-test.html" style="color:var(--indigo)">Take your first mock test →</a></div>`;
+    });
+    return;
+  }
+
+  const passes = hist.filter(h=>h.pass).length;
+  const best = Math.max(...hist.map(h=>h.total));
+  const avg = Math.round(hist.reduce((a,h)=>a+h.total,0)/n);
+  const avgV = Math.round(hist.reduce((a,h)=>a+(h.vs||0),0)/n);
+  const avgG = Math.round(hist.reduce((a,h)=>a+(h.gs||0),0)/n);
+  const avgL = Math.round(hist.reduce((a,h)=>a+(h.ls||0),0)/n);
+
+  // KPI
+  document.getElementById("kpiGrid").innerHTML = `
+    <div class="kpi-card indigo"><div class="kpi-label">Tests Taken</div><div class="kpi-val">${n}</div><div class="kpi-sub">all attempts</div></div>
+    <div class="kpi-card jade"><div class="kpi-label">Passes</div><div class="kpi-val">${passes}</div><div class="kpi-sub">${n?Math.round(passes/n*100):0}% pass rate</div></div>
+    <div class="kpi-card gold"><div class="kpi-label">Best Score</div><div class="kpi-val">${best}</div><div class="kpi-sub">out of 180</div></div>
+    <div class="kpi-card vermilion"><div class="kpi-label">Avg Score</div><div class="kpi-val">${avg}</div><div class="kpi-sub">need 90 to pass</div></div>
+  `;
+
+  // Chart — last 20
+  const chart20 = hist.slice(0,20).reverse();
+  const maxScore = 180;
+  const passLine = Math.round(90/maxScore*100);
+  let barsHtml = chart20.map(h => {
+    const pct = Math.max(4, Math.round(h.total/maxScore*100));
+    const color = h.pass ? "var(--jade)" : "var(--vermilion)";
+    const date = new Date(h.ts).toLocaleDateString("en-GB",{day:"2-digit",month:"short"});
+    return `<div class="bar-col">
+      <div class="bar-fill" style="height:${pct}%;background:${color}" title="${h.total}/180 · ${date}"></div>
+      <div class="bar-label">${h.total}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("chartArea").innerHTML = `
+    <div class="chart-pass-line" style="bottom:${passLine}%"><span class="chart-pass-label">90</span></div>
+    ${barsHtml}
+  `;
+
+  // Section performance
+  document.getElementById("secPerfGrid").innerHTML = [
+    {id:"vocab",name:"語彙 Vocabulary",avg:avgV,color:"jade"},
+    {id:"grammar",name:"文法・読解",avg:avgG,color:"grammar"},
+    {id:"listening",name:"聴解 Listening",avg:avgL,color:"listening"},
+  ].map(s=>{
+    const pct = Math.round(s.avg/60*100);
+    const weak = s.avg < 30;
+    return `<div class="sec-perf-card ${s.id}">
+      <div class="spc-name">${s.name}</div>
+      <div class="spc-score">${s.avg}<span style="font-size:14px;font-weight:400;color:var(--ink-faint)">/60</span></div>
+      <div class="spc-label">avg across ${n} test${n>1?"s":""}</div>
+      <div class="spc-bar"><i style="width:${pct}%"></i></div>
+      <div class="${weak?"weak-flag":"strong-flag"}">${weak?"⚠ Weak area — needs work":"✓ On track"}</div>
+    </div>`;
+  }).join("");
+
+  // Focus areas — sort by avg score ascending, flag weak
+  const sections = [
+    {name:"語彙 Vocabulary", avg:avgV, link:"n4-mock-test.html", drillLink:"n4-boost.html", type:"vocab",
+     tips:"Focus on 漢字読み and 文脈規定 drills. Review N4 kanji readings daily."},
+    {name:"文法・読解 Grammar+Reading", avg:avgG, link:"n4-mock-test.html", drillLink:"n4-boost.html", type:"grammar",
+     tips:"Practice 〜ために, 〜ことで, 〜たら conditionals. Read short passages timed."},
+    {name:"聴解 Listening", avg:avgL, link:"n4-mock-test.html", drillLink:"n4-boost.html", type:"listening",
+     tips:"Focus on 課題理解 dialogues. Practice identifying key action/decision from context."},
+  ].sort((a,b)=>a.avg-b.avg);
+
+  document.getElementById("focusAreas").innerHTML = sections.map(s=>`
+    <div class="focus-card ${s.avg<30?"weak":"ok"}">
+      <h4>${s.avg<30?"⚠":"✓"} ${s.name} — avg ${s.avg}/60</h4>
+      <p>${s.tips}<br>
+      <a class="tip-link" href="${s.drillLink}">→ Practice in N4 Boost Drills</a> ·
+      <a class="tip-link" href="${s.link}">→ Take a Mock Test</a></p>
+    </div>
+  `).join("");
+
+  // Achievements
+  const hasExamMode = hist.some(h=>h.mode==="exam");
+  const badges = [
+    {ico:"🎯", name:"First Attempt", desc:"Took your first N4 mock test", earned: n >= 1},
+    {ico:"🏆", name:"First Pass", desc:"Scored 90+ with all sections ≥19", earned: passes >= 1},
+    {ico:"📋", name:"3 Tests", desc:"Completed 3 mock tests", earned: n >= 3},
+    {ico:"⭐", name:"5 Tests", desc:"Completed 5 mock tests", earned: n >= 5},
+    {ico:"💪", name:"Score 120+", desc:"Scored 120 or above on any test", earned: best >= 120},
+    {ico:"🔥", name:"Score 150+", desc:"Scored 150 or above on any test", earned: best >= 150},
+    {ico:"✅", name:"All Sections", desc:"All 3 sections ≥30/60 in one test", earned: hist.some(h=>(h.vs>=30&&h.gs>=30&&h.ls>=30))},
+    {ico:"⏱", name:"Exam Mode", desc:"Completed a test in Exam Mode", earned: hasExamMode},
+  ];
+  document.getElementById("badgesGrid").innerHTML = badges.map(b=>`
+    <div class="badge ${b.earned?"earned":"locked"}">
+      <div class="badge-ico">${b.ico}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.earned?"✓ Earned":b.desc}</div>
+    </div>
+  `).join("");
+
+  // History table
+  if(!hist.length) {
+    document.getElementById("historyBody").innerHTML = `<div class="empty-state">No history yet.</div>`;
+    return;
+  }
+  const rows = hist.map((h,i)=>{
+    const date = new Date(h.ts).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${date}</td>
+      <td><span class="chip ${h.mode}">${h.mode==="exam"?"Exam":"Practice"}</span></td>
+      <td>${h.vs??"-"}</td>
+      <td>${h.gs??"-"}</td>
+      <td>${h.ls??"-"}</td>
+      <td><strong>${h.total}</strong>/180</td>
+      <td><span class="chip ${h.pass?"pass":"fail"}">${h.pass?"PASS":"FAIL"}</span></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("historyBody").innerHTML = `
+    <table class="htbl">
+      <thead><tr><th>#</th><th>Date</th><th>Mode</th><th>Vocab</th><th>Grammar</th><th>Listen</th><th>Total</th><th>Result</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+window.clearHistory = function() {
+  if(confirm("Clear local history? (Firebase history is kept)")) {
+    localStorage.removeItem("n4mock_t1");
+    loadAll();
+  }
+};
+
+loadAll();
+</script>
+</body>
+</html>

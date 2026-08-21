@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin Dashboard — N3 · N4</title>
+  <style>
+    :root {
+      --bg:            #12131a;
+      --bg2:           #0d0e14;
+      --surface:       #1b1d28;
+      --surface2:      #222533;
+      --line:          #2e3242;
+      --ink:           #ece8df;
+      --ink-dim:       #a6a8b6;
+      --ink-faint:     #6f7283;
+      --jade:          #5fc28a;
+      --jade-dim:      #2c6347;
+      --jade-bg:       #182b1f;
+      --vermilion:     #e2553f;
+      --verm-dim:      #5c2a23;
+      --verm-bg:       #2b1418;
+      --gold:          #d8af52;
+      --gold-bg:       #261f0e;
+      --indigo:        #7c8cf0;
+      --indigo-dim:    #363c6e;
+      --indigo-bg:     #1a1e35;
+      --rose:          #e07ba1;
+      --rose-bg:       #2b1520;
+      --rose-dim:      #6e2b46;
+      --radius:        14px;
+      --jp: "Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","YuGothic","Meiryo","Noto Sans JP",sans-serif;
+      --ui: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --mono: "Consolas","SF Mono","Fira Code",monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--ui);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      background-image: radial-gradient(1100px 500px at 80% -10%, #1a1d2e 0%, transparent 60%);
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+    /* ─────────── HEADER ─────────── */
+    .header {
+      position: sticky; top: 0; z-index: 200;
+      height: 56px;
+      background: #0d0e14ee;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex; align-items: center; gap: 16px; padding: 0 24px;
+    }
+    .hdr-brand { display: flex; align-items: baseline; gap: 10px; flex: 1; }
+    .hdr-kanji {
+      font-family: var(--jp); font-size: 22px; font-weight: 900;
+      color: var(--vermilion); letter-spacing: 1px;
+    }
+    .hdr-title {
+      font-size: 12px; font-weight: 700; color: var(--ink-faint);
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+    .hdr-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* ─────────── TAB NAV ─────────── */
+    .tab-nav {
+      display: flex; gap: 2px; padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg2);
+      position: sticky; top: 56px; z-index: 150;
+    }
+    .tab-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 13px 18px 11px;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--ink-faint); font-family: var(--ui); font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--ink-dim); }
+    .tab-btn.active { color: var(--ink); border-bottom-color: var(--indigo); }
+    .tab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      background: var(--vermilion); color: #fff;
+      border-radius: 9px; font-size: 10px; font-weight: 800;
+    }
+    .tab-badge.blue  { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo-dim); }
+    .tab-badge.green { background: var(--jade-bg);   color: var(--jade);   border: 1px solid var(--jade-dim); }
+
+    /* ─────────── TAB PANELS ─────────── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .page { max-width: 1120px; margin: 0 auto; padding: 28px 24px 80px; }
+
+    /* ─────────── SHARED SECTION LABEL ─────────── */
+    .sec-hdr {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    }
+    .sec-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--ink-faint);
+    }
+    .sec-divider { flex: 1; height: 1px; background: var(--line); }
+
+    /* ─────────── PILL BUTTONS ─────────── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 13px; border-radius: 20px;
+      font-family: var(--ui); font-size: 12px; font-weight: 600;
+      letter-spacing: .3px; cursor: pointer; border: 1px solid var(--line);
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .pill.ghost  { background: transparent; color: var(--ink-dim); }
+    .pill.ghost:hover  { background: var(--surface); color: var(--ink); }
+    .pill.danger { background: var(--verm-bg);   border-color: var(--verm-dim);    color: #f08080; }
+    .pill.danger:hover { background: #3a1a1e; }
+    .pill.primary { background: var(--indigo-bg); border-color: var(--indigo-dim); color: var(--indigo); }
+    .pill.primary:hover { background: #222640; }
+    .pill.success { background: var(--jade-bg);  border-color: var(--jade-dim);    color: var(--jade); }
+    .pill.success:hover { background: #1e3327; }
+    .pill svg { flex-shrink: 0; }
+
+    /* ─────────── LIVE BADGE ─────────── */
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; color: var(--jade); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--jade);
+      animation: livepulse 1.8s ease-in-out infinite;
+    }
+    @keyframes livepulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%     { opacity:.35; transform:scale(.65); }
+    }
+
+    /* ─────────── STATS GRID ─────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 26px;
+    }
+    @media (max-width:720px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    .stat {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px 20px;
+    }
+    .stat .s-label { font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+    .stat .s-val   { font-size:30px; font-weight:800; line-height:1; }
+    .stat .s-sub   { font-size:11px; color:var(--ink-faint); margin-top:5px; }
+    .stat.col-blue   .s-val { color:var(--indigo); }
+    .stat.col-green  .s-val { color:var(--jade); }
+    .stat.col-red    .s-val { color:var(--vermilion); }
+    .stat.col-gold   .s-val { color:var(--gold); font-size:17px; margin-top:4px; }
+
+    /* ─────────── PENDING APPROVALS CARDS ─────────── */
+    .pending-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px;
+    }
+    .pend-card {
+      background: var(--surface); border: 1px solid var(--gold-bg);
+      border-left: 3px solid var(--gold); border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .pend-card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .pend-username { font-size:15px; font-weight:700; color:var(--ink); }
+    .pend-time     { font-size:11px; color:var(--ink-faint); margin-top:3px; }
+    .pend-fields   { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+    .pend-row      { display:flex; gap:8px; font-size:12px; }
+    .pend-key      { color:var(--ink-faint); min-width:90px; font-weight:600; }
+    .pend-val      { color:var(--ink-dim); word-break:break-all; }
+    .pend-val.mono { font-family:var(--mono); font-size:11px; color:var(--indigo); }
+
+    .empty-state {
+      text-align:center; padding:36px 20px;
+      color:var(--ink-faint); font-size:13px; font-style:italic;
+    }
+    .empty-state .em-icon { font-size:28px; margin-bottom:8px; }
+
+    /* ─────────── TABLE SHARED ─────────── */
+    .table-wrap {
+      background:var(--surface); border:1px solid var(--line);
+      border-radius:var(--radius); overflow:hidden;
+    }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead th {
+      background:var(--bg2); padding:10px 16px;
+      font-size:10px; font-weight:700; text-transform:uppercase;
+      letter-spacing:1.5px; color:var(--ink-faint); text-align:left;
+      border-bottom:1px solid var(--line); white-space:nowrap;
+    }
+    tbody tr { border-bottom:1px solid var(--line); transition:background .1s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--surface2); }
+    tbody td { padding:11px 16px; vertical-align:middle; color:var(--ink-dim); }
+    tbody td.ink { color:var(--ink); }
+    tbody .empty-row td { text-align:center; padding:40px; color:var(--ink-faint); font-style:italic; }
+
+    /* ─────────── STATUS CHIPS ─────────── */
+    .chip {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 9px; border-radius:20px;
+      font-size:11px; font-weight:700; letter-spacing:.3px; white-space:nowrap;
+    }
+    .chip.registered { background:var(--indigo-bg); color:var(--indigo); border:1px solid var(--indigo-dim); }
+    .chip.granted    { background:var(--jade-bg);   color:var(--jade);   border:1px solid var(--jade-dim); }
+    .chip.denied     { background:var(--verm-bg);   color:#f08080;       border:1px solid var(--verm-dim); }
+    .chip.pending    { background:var(--gold-bg);   color:var(--gold);   border:1px solid #5a4718; }
+    .chip.approved-by-admin { background:var(--jade-bg); color:var(--jade); border:1px solid var(--jade-dim); }
+    .chip.denied-by-admin   { background:var(--verm-bg); color:#f08080;     border:1px solid var(--verm-dim); }
+    .chip.wrong { background:#2a1a2a; color:var(--rose); border:1px solid var(--rose-dim); }
+    .chip.none   { background:transparent; color:var(--ink-faint); border:1px solid var(--line); }
+
+    /* ─────────── USERS SECTION HEADER ─────────── */
+    .users-hdr { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+    .users-hdr .sec-label { margin-bottom:0; }
+
+    /* ─────────── MODAL ─────────── */
+    .modal-overlay {
+      position:fixed; inset:0; z-index:500;
+      background:#00000080; backdrop-filter:blur(6px);
+      display:flex; align-items:center; justify-content:center;
+      padding:20px;
+      opacity:0; pointer-events:none;
+      transition:opacity .2s;
+    }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal-card {
+      background:var(--surface); border:1px solid var(--line);
+      border-radius:var(--radius); padding:28px 28px 24px;
+      width:min(420px, 100%);
+      box-shadow:0 24px 60px #00000070;
+      transform:scale(.96); transition:transform .2s;
+    }
+    .modal-overlay.open .modal-card { transform:scale(1); }
+    .modal-title { font-size:17px; font-weight:700; margin-bottom:20px; }
+    .m-field { margin-bottom:16px; }
+    .m-field label {
+      display:block; font-size:11px; font-weight:700;
+      text-transform:uppercase; letter-spacing:1.5px;
+      color:var(--ink-dim); margin-bottom:6px;
+    }
+    .m-field input {
+      width:100%; background:var(--bg2); border:1px solid var(--line);
+      border-radius:8px; color:var(--ink); font-family:var(--ui);
+      font-size:14px; padding:10px 13px; outline:none;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    .m-field input:focus { border-color:var(--indigo); box-shadow:0 0 0 3px #7c8cf022; }
+    .m-field input::placeholder { color:var(--ink-faint); }
+    .m-hint { font-size:11px; color:var(--ink-faint); margin-top:5px; }
+    .modal-err { color:#f08080; font-size:12px; min-height:18px; margin-bottom:12px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:4px; }
+    .btn-primary {
+      padding:9px 20px; background:var(--indigo); border:none;
+      border-radius:8px; color:#fff; font-family:var(--ui);
+      font-size:13px; font-weight:700; cursor:pointer;
+      transition:background .15s; letter-spacing:.3px;
+    }
+    .btn-primary:hover { background:#8d9ef5; }
+    .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-ghost {
+      padding:9px 16px; background:transparent;
+      border:1px solid var(--line); border-radius:8px;
+      color:var(--ink-dim); font-family:var(--ui);
+      font-size:13px; cursor:pointer; transition:background .15s;
+    }
+    .btn-ghost:hover { background:var(--surface2); }
+
+    /* ─────────── SPINNER ─────────── */
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spin {
+      display:inline-block; width:12px; height:12px;
+      border:2px solid #ffffff44; border-top-color:#fff;
+      border-radius:50%; animation:spin .7s linear infinite;
+      vertical-align:middle; margin-right:6px;
+    }
+    @media (max-width:640px) { .reg-grid { grid-template-columns:1fr 1fr; } }
+    .rf.full  { grid-column:1 / -1; }
+
+    /* ── Open App dropdown ── */
+    .open-app-wrap { position: relative; }
+    .app-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 5px;
+      min-width: 190px;
+      box-shadow: 0 12px 32px #00000070;
+      z-index: 400;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity .15s, transform .15s;
+    }
+    .app-dropdown.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+    .app-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-dim);
+      transition: background .1s, color .1s;
+    }
+    .app-option:hover { background: var(--surface2); color: var(--ink); }
+    .app-option .app-tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: .5px;
+    }
+    .app-tag.n3 { background: var(--verm-bg);   color: var(--vermilion); border: 1px solid var(--verm-dim); }
+    .app-tag.n4 { background: var(--indigo-bg); color: var(--indigo);    border: 1px solid var(--indigo-dim); }
+    .app-divider { height: 1px; background: var(--line); margin: 4px 6px; }
+/* ── Build stamp ── */
+[data-version-badge]{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:6px;font-size:11px;color:var(--ink-faint);line-height:1.6;opacity:0;transition:opacity .3s}
+[data-version-badge][data-ready]{opacity:1}
+[data-version-badge] .vb-ver{font-weight:700;color:var(--ink-dim);letter-spacing:.4px}
+[data-version-badge] .vb-sep{opacity:.5}
+[data-version-badge] .vb-note{flex-basis:100%;text-align:center;font-size:10.5px;opacity:.85}
+
+    /* ─────────── ROLES ─────────── */
+    .role-badge{font-size:9.5px;font-weight:800;letter-spacing:1.2px;padding:3px 8px;border-radius:5px;
+      text-transform:uppercase}
+    .role-badge.owner{background:var(--gold-bg);color:var(--gold);border:1px solid #5a4718}
+    .role-badge.admin{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-dim)}
+    /* Owner-only controls stay hidden until the role resolves. */
+    .owner-only{display:none}
+    body.is-owner .owner-only{display:inline-flex}
+    body.is-owner tr .owner-only{display:inline-flex}
+    .admin-note{font-size:12px;color:var(--ink-faint);margin-bottom:14px;line-height:1.65}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="hdr-brand">
+    <span class="hdr-kanji">救急</span>
+    <span class="hdr-title">Admin Dashboard</span>
+    <span class="role-badge" id="roleBadge"></span>
+  </div>
+
+  <div class="hdr-actions">
+    <span class="live-badge"><span class="live-dot"></span>Live</span>
+    <div class="open-app-wrap">
+      <button class="pill ghost" id="openAppBtn">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="1" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="8" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.2"/></svg>
+        Open App
+        <svg width="9" height="9" viewBox="0 0 10 6" fill="none" aria-hidden="true" style="margin-left:2px"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <!-- Dropdown -->
+      <div class="app-dropdown" id="appDropdown" role="menu">
+        <div class="app-option" data-url="n3-pass-engine.html" role="menuitem">
+          <span class="app-tag n3">N3</span>
+          N3 Pass Engine
+        </div>
+        <div class="app-divider"></div>
+        <div class="app-option" data-url="n4-pass-engine.html" role="menuitem">
+          <span class="app-tag n4">N4</span>
+          N4 Pass Engine
+        </div>
+      </div>
+    </div>
+    <button class="pill ghost" id="changePwBtn">🔑 Change Password</button>
+    <button class="pill danger" id="logoutBtn">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9.5 4.5 12 7l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7H5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5.5 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<!-- ── Tab nav ── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="users">
+    Users <span class="tab-badge blue" id="userCountBadge">0</span>
+  </button>
+  <button class="tab-btn" data-tab="activity">
+    Activity <span class="tab-badge green" id="activityCountBadge">0</span>
+  </button>
+  <button class="tab-btn" data-tab="admins">
+    Admins <span class="tab-badge blue" id="adminCountBadge">0</span>
+  </button>
+</nav>
+<div style="margin:10px 24px 0" data-version-badge aria-live="polite"></div>
+
+<!-- ══════════════ TAB: OVERVIEW ══════════════ -->
+<div id="tab-overview" class="tab-panel active">
+  <div class="page">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat col-blue">
+        <div class="s-label">Total Users</div>
+        <div class="s-val" id="ovTotalUsers">—</div>
+        <div class="s-sub">registered accounts</div>
+      </div>
+      <div class="stat col-green">
+        <div class="s-label">New This Week</div>
+        <div class="s-val" id="ovNewWeek">—</div>
+        <div class="s-sub">accounts created</div>
+      </div>
+      <div class="stat col-red">
+        <div class="s-label">Sign-ins (24h)</div>
+        <div class="s-val" id="ovSignins">—</div>
+        <div class="s-sub">last day of activity</div>
+      </div>
+      <div class="stat col-gold">
+        <div class="s-label">Last Activity</div>
+        <div class="s-val" id="ovLastActivity">—</div>
+        <div class="s-sub" id="ovLastFull"></div>
+      </div>
+    </div>
+
+    <!-- Recent sign-ups -->
+    <div class="sec-hdr" style="margin-top:28px">
+      <span class="sec-label">Recent Sign-ups</span>
+      <div class="sec-divider"></div>
+    </div>
+    <div class="pending-grid" id="recentGrid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="em-icon">📖</div>
+        No accounts yet
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ TAB: USERS ══════════════ -->
+<div id="tab-users" class="tab-panel">
+  <div class="page">
+    <div class="users-hdr">
+      <span class="sec-label">User Accounts</span>
+      <div class="sec-divider"></div>
+      <button class="pill primary" id="addUserBtn">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Add User
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Joined</th>
+            <th>Last Sign-in</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTbody">
+          <tr class="empty-row"><td colspan="5">Loading users…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TAB: ACTIVITY ══════════════ -->
+<div id="tab-activity" class="tab-panel">
+  <div class="page">
+    <div class="sec-hdr">
+      <span class="sec-label">Login Activity</span>
+      <span class="live-badge" style="font-size:10px"><span class="live-dot"></span>Real-time</span>
+      <div class="sec-divider"></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="activityTbody">
+          <tr class="empty-row"><td colspan="4">Loading activity…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TAB: ADMINS ══════════════ -->
+<div id="tab-admins" class="tab-panel">
+  <div class="page">
+    <div class="sec-hdr">
+      <span class="sec-label">Administrators</span>
+      <div class="sec-divider"></div>
+    </div>
+    <div class="admin-note" id="adminsNote"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Account</th><th>Role</th><th>Granted</th><th>By</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="adminsTbody">
+          <tr class="empty-row"><td colspan="5">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sec-hdr" style="margin-top:28px">
+      <span class="sec-label">Promote a student</span>
+      <div class="sec-divider"></div>
+    </div>
+    <div class="admin-note">Promoting gives that person the whole dashboard — every student, every sign-in log. It does not change how they sign in, and it does not let them grant access to anyone else.</div>
+    <div class="pending-grid" id="promoteGrid"></div>
+  </div>
+</div>
+
+<!-- ══════════════ CHANGE PASSWORD MODAL ══════════════ -->
+<div class="modal-overlay" id="changePwModal" role="dialog" aria-modal="true" aria-labelledby="changePwTitle">
+  <div class="modal-card">
+    <div class="modal-title" id="changePwTitle">Change Admin Password</div>
+    <form id="changePwForm" autocomplete="off" novalidate>
+      <div class="m-field">
+        <label for="curPw">Current Password</label>
+        <input id="curPw" type="password" placeholder="Your current password"
+               autocomplete="current-password">
+      </div>
+      <div class="m-field">
+        <label for="newPw">New Password</label>
+        <input id="newPw" type="password" placeholder="Min 8 characters"
+               autocomplete="new-password">
+      </div>
+      <div class="m-field">
+        <label for="newPw2">Confirm New Password</label>
+        <input id="newPw2" type="password" placeholder="Repeat new password"
+               autocomplete="new-password">
+      </div>
+      <div class="modal-err" id="changePwErr"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cancelChangePw">Cancel</button>
+        <button type="submit" class="btn-primary" id="changePwSubmit">Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════ ADD USER MODAL ══════════════ -->
+<div class="modal-overlay" id="addUserModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <div class="modal-title" id="modalTitle">Add New User</div>
+    <form id="addUserForm" autocomplete="off" novalidate>
+      <div class="m-field">
+        <label for="newFullName">Full Name</label>
+        <input id="newFullName" type="text" placeholder="e.g. Hari Krishnan"
+               autocomplete="off" spellcheck="false">
+        <div class="m-hint">This is the name they will type to sign in</div>
+      </div>
+      <div class="m-field">
+        <label for="newDob">Date of Birth</label>
+        <input id="newDob" type="date">
+        <div class="m-hint">Name + date of birth together are their sign-in</div>
+      </div>
+      <div class="modal-err" id="addUserErr"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cancelAddUser">Cancel</button>
+        <button type="submit" class="btn-primary" id="createUserBtn">Create User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+// ─────────────────────────────────────────────────────────────────────────────
+// Firebase v11 imports
+// ─────────────────────────────────────────────────────────────────────────────
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, deleteDoc,
+  collection, query, orderBy, limit, onSnapshot, serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword,
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword,
+} from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCDfc2n8sJfesrIwbWluTmjTnTsl_x46SQ",
+  authDomain:        "japanesen3passengine.firebaseapp.com",
+  projectId:         "japanesen3passengine",
+  storageBucket:     "japanesen3passengine.firebasestorage.app",
+  messagingSenderId: "409024055518",
+  appId:             "1:409024055518:web:c1e74cb1cf64e50fc25a4f",
+  measurementId:     "G-5KH5JW9JX3"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// Student Auth accounts are <username>@EMAIL_DOMAIN — must match login.html
+// and firestore.rules.
+const EMAIL_DOMAIN = "students.japanesen3passengine.app";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth guard — fast sessionStorage check for UX, then a real Firebase Auth
+// check: the signed-in account must have an admins/{uid} doc. Data access is
+// enforced by firestore.rules either way; this just redirects non-admins.
+// ─────────────────────────────────────────────────────────────────────────────
+(function guard() {
+  try {
+    const d = JSON.parse(sessionStorage.getItem("n3_admin_verified") ?? "null");
+    if (d?.verified !== true) throw new Error();
+  } catch { window.location.replace("login.html"); }
+})();
+
+// Who is signed in, and at which tier. Owner-only controls are hidden when
+// this resolves to a plain admin — the rules refuse those writes regardless,
+// so this is presentation, not protection.
+let ME = { uid: null, email: null, role: null };
+const meReady = (() => {
+  let resolveMe;
+  const p = new Promise(r => { resolveMe = r; });
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.replace("login.html"); return; }
+    try {
+      const snap = await getDoc(doc(db, "admins", user.uid));
+      if (!snap.exists()) {
+        await signOut(auth);
+        window.location.replace("login.html");
+        return;
+      }
+      // A record with no role predates the two-tier model: treat it as a plain
+      // admin so a missing field can never grant the higher tier.
+      ME = { uid: user.uid, email: user.email, role: snap.data().role ?? "admin" };
+      document.body.classList.toggle("is-owner", ME.role === "owner");
+      const badge = document.getElementById("roleBadge");
+      if (badge) {
+        badge.textContent = ME.role === "owner" ? "OWNER" : "ADMIN";
+        badge.className = `role-badge ${ME.role}`;
+      }
+      resolveMe(ME);
+    } catch {
+      window.location.replace("login.html");
+    }
+  });
+  return p;
+})();
+
+// Unsubscribe handles
+let unsubUsers = null;
+let unsubLog   = null;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared state (populated by real-time listeners)
+// ─────────────────────────────────────────────────────────────────────────────
+let allUsers   = {};   // { username: docData }
+let allLogs    = [];   // ordered by timestamp desc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab navigation
+// ─────────────────────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Header actions
+// ─────────────────────────────────────────────────────────────────────────────
+// Open App dropdown
+const openAppBtn  = document.getElementById("openAppBtn");
+const appDropdown = document.getElementById("appDropdown");
+
+openAppBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  appDropdown.classList.toggle("open");
+});
+
+// Close dropdown when clicking anywhere else
+document.addEventListener("click", () => appDropdown.classList.remove("open"));
+
+// Open the chosen site in a new tab
+appDropdown.querySelectorAll(".app-option").forEach(opt => {
+  opt.addEventListener("click", e => {
+    e.stopPropagation();
+    window.open(opt.dataset.url, "_blank");
+    appDropdown.classList.remove("open");
+  });
+});
+// ── Change admin password (reauth with current password, then update) ──────
+const pwModal  = document.getElementById("changePwModal");
+const pwForm   = document.getElementById("changePwForm");
+const pwErr    = document.getElementById("changePwErr");
+const pwSubmit = document.getElementById("changePwSubmit");
+
+function closePwModal() {
+  pwModal.classList.remove("open");
+  pwForm.reset();
+  pwErr.textContent = "";
+  pwSubmit.disabled = false;
+  pwSubmit.textContent = "Update Password";
+}
+
+document.getElementById("changePwBtn").addEventListener("click", () => {
+  pwModal.classList.add("open");
+  document.getElementById("curPw").focus();
+});
+document.getElementById("cancelChangePw").addEventListener("click", closePwModal);
+pwModal.addEventListener("click", e => { if (e.target === pwModal) closePwModal(); });
+
+pwForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  pwErr.textContent = "";
+
+  const cur  = document.getElementById("curPw").value;
+  const next = document.getElementById("newPw").value;
+  const rep  = document.getElementById("newPw2").value;
+
+  if (next.length < 8)  { pwErr.textContent = "New password must be at least 8 characters."; return; }
+  if (next !== rep)     { pwErr.textContent = "New passwords don't match."; return; }
+  if (next === cur)     { pwErr.textContent = "New password must be different from the current one."; return; }
+
+  const user = auth.currentUser;
+  if (!user) { pwErr.textContent = "Session expired — sign in again."; return; }
+
+  pwSubmit.disabled = true;
+  pwSubmit.innerHTML = `<span class="spin"></span>Updating…`;
+  try {
+    await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, cur));
+    await updatePassword(user, next);
+    closePwModal();
+    alert("✓ Password updated. Use the new password from your next sign-in.");
+  } catch (err) {
+    pwErr.textContent =
+      err?.code === "auth/invalid-credential" || err?.code === "auth/wrong-password"
+        ? "Current password is incorrect."
+        : `Failed: ${err?.message ?? err}`;
+    pwSubmit.disabled = false;
+    pwSubmit.textContent = "Update Password";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  sessionStorage.removeItem("n3_admin_verified");
+  try { await signOut(auth); } catch { /* ignore */ }
+  window.location.replace("login.html");
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utility functions
+// ─────────────────────────────────────────────────────────────────────────────
+// Every value that reaches innerHTML goes through esc() first. Firestore holds
+// user-supplied strings, and this dashboard renders them while signed in as the
+// admin — so an unescaped display name is script running with full privileges.
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
+function relTime(ts) {
+  if (!ts) return "—";
+  const ms = ts.toMillis ? ts.toMillis() : Number(ts);
+  const s  = (Date.now() - ms) / 1000;
+  if (s < 10)     return "just now";
+  if (s < 60)     return `${Math.floor(s)}s ago`;
+  if (s < 3600)   return `${Math.floor(s/60)}m ago`;
+  if (s < 86400)  return `${Math.floor(s/3600)}h ago`;
+  if (s < 604800) return `${Math.floor(s/86400)}d ago`;
+  return new Date(ms).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"2-digit" });
+}
+function absTime(ts) {
+  if (!ts) return "—";
+  const ms = ts.toMillis ? ts.toMillis() : Number(ts);
+  return new Date(ms).toLocaleString("en-GB", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+}
+// "Hari Krishnan" → "hari_krishnan". Must stay identical to slugName() in
+// login.html, or an admin-created account won't match what the student types.
+function slugName(name) {
+  return name
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recent sign-ups — sign-up is self-serve now, so this is a read-only feed
+// rather than an approval queue.
+// ─────────────────────────────────────────────────────────────────────────────
+function renderRecentSignups() {
+  const grid = document.getElementById("recentGrid");
+  const list = Object.values(allUsers)
+    .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))
+    .slice(0, 6);
+
+  if (!list.length) {
+    grid.innerHTML =
+      `<div class="empty-state" style="grid-column:1/-1"><div class="em-icon">📖</div>No accounts yet</div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(u => `
+    <div class="pend-card">
+      <div class="pend-card-header">
+        <div>
+          <div class="pend-username">${esc(u.fullName ?? u.username)}</div>
+          <div class="pend-time">Joined ${esc(relTime(u.createdAt))}</div>
+        </div>
+        <span class="chip granted">✓ Active</span>
+      </div>
+      <div class="pend-fields">
+        <div class="pend-row">
+          <span class="pend-key">Username</span>
+          <span class="pend-val mono">@${esc(u.username)}</span>
+        </div>
+        <div class="pend-row">
+          <span class="pend-key">Last sign-in</span>
+          <span class="pend-val">${esc(relTime(u.lastLogin))}</span>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Render users table
+// ─────────────────────────────────────────────────────────────────────────────
+function renderUsersTable() {
+  const tbody = document.getElementById("usersTbody");
+  const list  = Object.values(allUsers);
+
+  document.getElementById("userCountBadge").textContent = list.length;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No users yet. Click "Add User" to create one.</td></tr>`;
+    return;
+  }
+
+  // Sort newest first
+  list.sort((a, b) => {
+    const ta = a.createdAt?.toMillis?.() ?? 0;
+    const tb = b.createdAt?.toMillis?.() ?? 0;
+    return tb - ta;
+  });
+
+  tbody.innerHTML = list.map(u => `
+      <tr>
+        <td class="ink" style="font-weight:600">${esc(u.fullName ?? u.username)}</td>
+        <td class="mono" style="font-size:12px;color:var(--ink-dim)">@${esc(u.username)}</td>
+        <td style="font-size:12px">${esc(relTime(u.createdAt))}</td>
+        <td style="font-size:12px">${esc(relTime(u.lastLogin))}</td>
+        <td>
+          <button class="pill danger delete-user-btn" style="font-size:11px;padding:4px 10px"
+            data-username="${esc(u.username)}">Delete</button>
+        </td>
+      </tr>
+    `).join("");
+}
+
+// Event delegation — keeps usernames out of inline onclick attributes, where
+// a quote in the value would break out into executable markup.
+document.getElementById("usersTbody").addEventListener("click", e => {
+  const btn = e.target.closest(".delete-user-btn");
+  if (btn) deleteUser(btn.dataset.username);
+});
+
+async function deleteUser(username) {
+  if (!confirm(`Delete user @${username}? This cannot be undone.`)) return;
+  try {
+    await deleteDoc(doc(db, "users", username));
+    // The Firebase Auth account can't be deleted from the browser. Without a
+    // profile doc the login flow rejects it and the rules block all data
+    // access, but to fully remove the credential run:
+    //   node scripts/manage-auth.mjs delete <username>
+    alert(`@${username} deleted. To also remove their sign-in credential, run:\n  node scripts/manage-auth.mjs delete ${username}`);
+  } catch (e) {
+    console.error("[DeleteUser]", e);
+    alert("Error deleting user. Check console.");
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Render activity log table
+// ─────────────────────────────────────────────────────────────────────────────
+function renderActivityTable() {
+  const tbody = document.getElementById("activityTbody");
+  document.getElementById("activityCountBadge").textContent = allLogs.length;
+
+  if (!allLogs.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="4">No login activity yet.</td></tr>`;
+    return;
+  }
+
+  // Status drives a CSS class, so it is looked up in a fixed table rather than
+  // interpolated. Anything unrecognised falls back to an escaped plain chip.
+  // The rules only permit these two values to be written.
+  const statusChip = {
+    registered: `<span class="chip registered">★ Registered</span>`,
+    granted:    `<span class="chip granted">✓ Granted</span>`,
+  };
+
+  tbody.innerHTML = allLogs.map(d => {
+    const chip = statusChip[d.status] ?? `<span class="chip">${esc(d.status ?? "—")}</span>`;
+    return `<tr>
+      <td style="white-space:nowrap">
+        ${esc(relTime(d.timestamp))}<br>
+        <span style="font-size:10px;color:var(--ink-faint)">${esc(absTime(d.timestamp))}</span>
+      </td>
+      <td class="ink" style="font-weight:600">${esc(d.fullName ?? "—")}</td>
+      <td class="mono" style="font-size:12px;color:var(--ink-dim)">${d.username ? `@${esc(d.username)}` : "—"}</td>
+      <td>${chip}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Real-time listeners
+// ─────────────────────────────────────────────────────────────────────────────
+function subscribeUsers() {
+  if (unsubUsers) unsubUsers();
+  unsubUsers = onSnapshot(collection(db, "users"), snap => {
+    allUsers = {};
+    snap.docs.forEach(d => { allUsers[d.id] = { ...d.data(), _id: d.id }; });
+    renderUsersTable();
+    renderRecentSignups();
+    updateOverviewStats();
+    renderPromoteGrid();
+  }, err => console.error("[Users snapshot]", err));
+}
+
+// There is one unified log now — the pre-merge login_log_n4 collection is
+// retired and closed in the rules, so nothing subscribes to it.
+function subscribeLoginLog() {
+  if (unsubLog) unsubLog();
+
+  const q = query(collection(db, "login_log"), orderBy("timestamp", "desc"), limit(200));
+  unsubLog = onSnapshot(q, snap => {
+    allLogs = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+    renderActivityTable();
+    updateOverviewStats();
+  }, err => console.error("[LoginLog]", err));
+}
+
+function updateOverviewStats() {
+  const users  = Object.values(allUsers);
+  const latest = allLogs[0];
+  const now    = Date.now();
+  const WEEK   = 7 * 24 * 60 * 60 * 1000;
+  const DAY    = 24 * 60 * 60 * 1000;
+
+  const newThisWeek = users.filter(u => now - (u.createdAt?.toMillis?.() ?? 0) < WEEK).length;
+  const signins24h  = allLogs.filter(d => now - (d.timestamp?.toMillis?.() ?? 0) < DAY).length;
+
+  document.getElementById("ovTotalUsers").textContent   = users.length;
+  document.getElementById("ovNewWeek").textContent      = newThisWeek;
+  document.getElementById("ovSignins").textContent      = signins24h;
+  document.getElementById("ovLastActivity").textContent = latest ? relTime(latest.timestamp) : "—";
+  document.getElementById("ovLastFull").textContent     = latest ? absTime(latest.timestamp)  : "";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Add User Modal
+// ─────────────────────────────────────────────────────────────────────────────
+const addModal   = document.getElementById("addUserModal");
+const addForm    = document.getElementById("addUserForm");
+const addErrEl   = document.getElementById("addUserErr");
+const createBtn  = document.getElementById("createUserBtn");
+
+function openModal()  {
+  addModal.classList.add("open");
+  document.getElementById("newDob").max = new Date().toISOString().slice(0, 10);
+  document.getElementById("newFullName").focus();
+}
+function closeModal() {
+  addModal.classList.remove("open");
+  addForm.reset();
+  addErrEl.textContent = "";
+  createBtn.disabled = false;
+  createBtn.textContent = "Create User";
+}
+
+document.getElementById("addUserBtn").addEventListener("click", openModal);
+document.getElementById("cancelAddUser").addEventListener("click", closeModal);
+addModal.addEventListener("click", e => { if (e.target === addModal) closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closePwModal(); } });
+
+addForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  addErrEl.textContent = "";
+
+  const fullName = document.getElementById("newFullName").value.trim().replace(/\s+/g, " ");
+  const dob      = document.getElementById("newDob").value;
+  const username = slugName(fullName);
+
+  if (!/^[a-z0-9_]{2,30}$/.test(username)) {
+    addErrEl.textContent = "Enter a name with at least 2 letters or numbers";
+    return;
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dob) || new Date(`${dob}T00:00:00Z`).getTime() > Date.now()) {
+    addErrEl.textContent = "Pick a valid date of birth";
+    return;
+  }
+
+  // Same derivation as login.html — the student signs in with name + DOB.
+  const password = `${dob}:${username}`;
+
+  createBtn.disabled = true;
+  createBtn.innerHTML = `<span class="spin"></span>Creating…`;
+
+  try {
+    const userRef = doc(db, "users", username);
+    const existing = await getDoc(userRef);
+    if (existing.exists()) {
+      addErrEl.textContent = `Username "@${username}" is already taken`;
+      createBtn.disabled = false;
+      createBtn.textContent = "Create User";
+      return;
+    }
+
+    // Create the credential in Firebase Auth on a secondary app instance so
+    // the new user's session doesn't replace the admin's own session.
+    const secondaryApp  = initializeApp(firebaseConfig, `user-creation-${Date.now()}`);
+    const secondaryAuth = getAuth(secondaryApp);
+    let uid;
+    try {
+      const cred = await createUserWithEmailAndPassword(
+        secondaryAuth, `${username}@${EMAIL_DOMAIN}`, password
+      );
+      uid = cred.user.uid;
+      await signOut(secondaryAuth);
+    } catch (authErr) {
+      addErrEl.textContent = authErr?.code === "auth/email-already-in-use"
+        ? `A sign-in credential for "@${username}" already exists (orphaned account?). Run: node scripts/manage-auth.mjs delete ${username}`
+        : `Failed to create credential: ${authErr?.message ?? authErr}`;
+      createBtn.disabled = false;
+      createBtn.textContent = "Create User";
+      return;
+    }
+
+    // Profile doc — no credential material; Firebase Auth owns the password.
+    await setDoc(userRef, {
+      username,
+      fullName,
+      uid,
+      status:    "active",
+      createdAt: serverTimestamp(),
+      createdBy: "super_admin",
+    });
+    closeModal();
+  } catch (err) {
+    console.error("[CreateUser]", err);
+    addErrEl.textContent = "Failed to create user. Check console.";
+    createBtn.disabled = false;
+    createBtn.textContent = "Create User";
+  }
+});
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Administrators — roster, promotion and revocation
+//
+// Every control here is also enforced in firestore.rules: only an owner may
+// write to admins/, the owner tier cannot be granted from a browser at all,
+// and nobody can revoke themselves or another owner. Hiding a button is a
+// courtesy; the rules are the actual boundary.
+// ─────────────────────────────────────────────────────────────────────────────
+let allAdmins = {};
+let unsubAdmins = null;
+
+function subscribeAdmins() {
+  if (unsubAdmins) unsubAdmins();
+  unsubAdmins = onSnapshot(collection(db, "admins"), snap => {
+    allAdmins = {};
+    snap.docs.forEach(d => { allAdmins[d.id] = { ...d.data(), _id: d.id }; });
+    document.getElementById("adminCountBadge").textContent = snap.size;
+    renderAdminsTable();
+    renderPromoteGrid();
+  }, err => console.error("[Admins snapshot]", err));
+}
+
+function renderAdminsTable() {
+  const tbody = document.getElementById("adminsTbody");
+  const note = document.getElementById("adminsNote");
+  const list = Object.values(allAdmins)
+    .sort((a, b) => (a.role === "owner" ? -1 : b.role === "owner" ? 1 : 0));
+
+  note.textContent = ME.role === "owner"
+    ? "You are an owner: you can grant and revoke admin access. Admins you promote can see and manage everything you can, but cannot change who is an admin."
+    : "You are an admin: you can see and manage everything here. Only an owner can grant or revoke admin access.";
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No administrators.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(a => {
+    const role = a.role ?? "admin";
+    const isSelf = a._id === ME.uid;
+    // An owner is never revocable from the browser, and neither are you.
+    const revocable = role !== "owner" && !isSelf;
+    return `
+      <tr>
+        <td class="ink" style="font-weight:600">
+          ${esc(a.displayName || a.email || a.username || a._id)}
+          ${isSelf ? `<span style="color:var(--ink-faint);font-weight:400"> — you</span>` : ""}
+          ${a.email && a.displayName ? `<br><span class="mono" style="font-size:11px;color:var(--ink-faint)">${esc(a.email)}</span>` : ""}
+        </td>
+        <td><span class="role-badge ${role === "owner" ? "owner" : "admin"}">${role}</span></td>
+        <td style="font-size:12px">${esc(relTime(a.grantedAt))}</td>
+        <td style="font-size:12px;color:var(--ink-dim)">${esc(a.grantedBy || "—")}</td>
+        <td>${revocable
+          ? `<button class="pill danger owner-only revoke-admin-btn" style="font-size:11px;padding:4px 10px"
+               data-uid="${esc(a._id)}">Revoke</button>`
+          : `<span style="color:var(--ink-faint);font-size:11px">${role === "owner" ? "protected" : "—"}</span>`}
+        </td>
+      </tr>`;
+  }).join("");
+}
+
+function renderPromoteGrid() {
+  const grid = document.getElementById("promoteGrid");
+  if (ME.role !== "owner") {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">Only an owner can promote people.</div>`;
+    return;
+  }
+  const candidates = Object.values(allUsers)
+    .filter(u => u.uid && !allAdmins[u.uid])
+    .sort((a, b) => (a.fullName || a.username).localeCompare(b.fullName || b.username));
+
+  if (!candidates.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="em-icon">👤</div>Every student is already an admin, or there are no students yet.</div>`;
+    return;
+  }
+
+  grid.innerHTML = candidates.map(u => `
+    <div class="pend-card">
+      <div class="pend-card-header">
+        <div>
+          <div class="pend-username">${esc(u.fullName || u.username)}</div>
+          <div class="pend-time">@${esc(u.username)} · joined ${esc(relTime(u.createdAt))}</div>
+        </div>
+      </div>
+      <div class="pend-actions">
+        <button class="pill success promote-btn" data-username="${esc(u.username)}">↑ Make admin</button>
+      </div>
+    </div>`).join("");
+}
+
+async function promoteToAdmin(username) {
+  const u = allUsers[username];
+  if (!u || !u.uid) { alert("That account has no sign-in record yet — it cannot be promoted."); return; }
+  if (allAdmins[u.uid]) { alert("Already an admin."); return; }
+  const label = u.fullName || username;
+  if (!confirm(
+    `Make ${label} an admin?\n\n` +
+    `They will be able to see every student, every sign-in, and manage accounts — everything you can, except granting admin access to others.\n\n` +
+    `They keep signing in exactly as they do now.`
+  )) return;
+
+  try {
+    await setDoc(doc(db, "admins", u.uid), {
+      uid:         u.uid,
+      email:       `${username}@${EMAIL_DOMAIN}`,
+      displayName: u.fullName || username,
+      username,
+      role:        "admin",
+      grantedAt:   serverTimestamp(),
+      grantedBy:   ME.email || ME.uid,
+    });
+  } catch (e) {
+    console.error("[Promote]", e);
+    alert(e?.code === "permission-denied"
+      ? "Refused: only an owner can grant admin access."
+      : "Could not promote: " + e.message);
+  }
+}
+
+async function revokeAdminAccess(uid) {
+  const a = allAdmins[uid];
+  if (!a) return;
+  if (uid === ME.uid) { alert("You cannot revoke your own access."); return; }
+  if ((a.role ?? "admin") === "owner") { alert("Owners can only be removed with the CLI, deliberately."); return; }
+  const label = a.displayName || a.email || uid;
+  if (!confirm(`Revoke admin access for ${label}?\n\nThey keep their account and their study progress — they simply stop being an admin.`)) return;
+
+  try {
+    await deleteDoc(doc(db, "admins", uid));
+  } catch (e) {
+    console.error("[Revoke]", e);
+    alert(e?.code === "permission-denied"
+      ? "Refused: only an owner can revoke admin access."
+      : "Could not revoke: " + e.message);
+  }
+}
+
+document.getElementById("adminsTbody").addEventListener("click", e => {
+  const btn = e.target.closest(".revoke-admin-btn");
+  if (btn) revokeAdminAccess(btn.dataset.uid);
+});
+document.getElementById("promoteGrid").addEventListener("click", e => {
+  const btn = e.target.closest(".promote-btn");
+  if (btn) promoteToAdmin(btn.dataset.username);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────────────────
+subscribeUsers();
+subscribeLoginLog();
+meReady.then(() => subscribeAdmins());
+</script>
+<script src="version-badge.js" defer></script>
+</body>
+</html>

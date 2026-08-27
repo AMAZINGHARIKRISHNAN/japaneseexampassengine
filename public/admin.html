@@ -218,9 +218,66 @@
     .chip.none   { background:transparent; color:var(--ink-faint); border:1px solid var(--line); }
     .chip.active     { background:var(--jade-bg); color:var(--jade); border:1px solid var(--jade-dim); }
     .chip.suspended  { background:var(--verm-bg); color:#f08080;    border:1px solid var(--verm-dim); }
-    /* Row actions wrap rather than widening the Actions column on a narrow screen. */
-    .row-actions { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
-    .row-actions .pill { font-size:11px; padding:4px 9px; }
+    /* ─────────── USERS TOOLBAR ─────────── */
+    .users-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+    .search-box { position:relative; flex:1; min-width:170px; max-width:300px; }
+    .search-box input {
+      width:100%; background:var(--bg); border:1px solid var(--line); border-radius:8px;
+      padding:8px 12px 8px 31px; color:var(--ink); font-family:inherit; font-size:13px;
+    }
+    .search-box input:focus { outline:none; border-color:var(--indigo); box-shadow:0 0 0 3px #7c8cf022; }
+    .search-box input::placeholder { color:var(--ink-faint); }
+    .search-box svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--ink-faint); }
+    .filter-group { display:flex; gap:3px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:3px; }
+    .filter-btn {
+      background:transparent; border:none; color:var(--ink-faint); font:inherit; font-size:12px;
+      padding:5px 11px; border-radius:6px; cursor:pointer; transition:background .12s,color .12s;
+    }
+    .filter-btn:hover { color:var(--ink-dim); }
+    .filter-btn.active { background:var(--surface2); color:var(--ink); }
+
+    /* ─────────── IDENTITY CELL ─────────── */
+    /* Name and handle share one column so the table keeps five columns instead
+       of six — the roster reads as a list of people, not a grid of fields. */
+    .who { display:flex; align-items:center; gap:10px; min-width:0; }
+    .avatar {
+      width:30px; height:30px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+      font-size:11px; font-weight:700; letter-spacing:.4px;
+      background:var(--indigo-bg); color:var(--indigo); border:1px solid var(--indigo-dim);
+    }
+    .who-name { font-weight:600; color:var(--ink); line-height:1.35; }
+    .who-handle { font-family:var(--mono); font-size:11px; color:var(--ink-faint); line-height:1.3; }
+    tr.is-suspended .avatar { background:var(--verm-bg); color:#f08080; border-color:var(--verm-dim); }
+    tr.is-suspended .who-name { color:var(--ink-dim); }
+
+    /* ─────────── ROW OVERFLOW MENU ─────────── */
+    .row-menu-btn {
+      background:transparent; border:1px solid transparent; border-radius:6px; color:var(--ink-faint);
+      width:28px; height:28px; display:grid; place-items:center; cursor:pointer; transition:all .12s;
+    }
+    .row-menu-btn:hover { background:var(--surface2); color:var(--ink); border-color:var(--line); }
+    .row-menu {
+      position:fixed; z-index:60; min-width:196px; background:var(--surface);
+      border:1px solid var(--line); border-radius:9px; padding:5px;
+      box-shadow:0 12px 34px #000a;
+    }
+    .row-menu[hidden] { display:none; }
+    .row-menu-item {
+      display:block; width:100%; background:transparent; border:none; color:var(--ink-dim);
+      font:inherit; font-size:12.5px; text-align:left; padding:8px 10px; border-radius:6px; cursor:pointer;
+    }
+    .row-menu-item:hover { background:var(--surface2); color:var(--ink); }
+    .row-menu-item[hidden] { display:none; }
+    .row-menu-item.danger { color:#f08080; }
+    .row-menu-item.danger:hover { background:var(--verm-bg); }
+    .row-menu-sep { height:1px; background:var(--line); margin:4px 2px; }
+
+    /* Header for the actions column: present for screen readers, invisible on
+       screen, where a lone "⋯" needs no label. */
+    .sr-only {
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+    }
     /* A command the admin must run in a terminal, shown for the jobs a browser
        genuinely cannot do rather than a button that quietly fails. */
     .cmd-box { display:flex; background:var(--bg); border:1px solid var(--line);
@@ -469,20 +526,34 @@
         Add User
       </button>
     </div>
+    <div class="users-toolbar">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="6" cy="6" r="4.25" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M9.2 9.2 12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <input id="userSearch" type="search" placeholder="Search name or username"
+               autocomplete="off" spellcheck="false" aria-label="Search students">
+      </div>
+      <div class="filter-group" role="group" aria-label="Filter by status">
+        <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-btn" data-filter="active" aria-pressed="false">Active</button>
+        <button class="filter-btn" data-filter="suspended" aria-pressed="false">Suspended</button>
+      </div>
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Username</th>
+            <th>Student</th>
             <th>Joined</th>
             <th>Last Sign-in</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody id="usersTbody">
-          <tr class="empty-row"><td colspan="6">Loading users…</td></tr>
+          <tr class="empty-row"><td colspan="5">Loading users…</td></tr>
         </tbody>
       </table>
     </div>
@@ -594,6 +665,17 @@
       </div>
     </form>
   </div>
+</div>
+
+<!-- ══════════════ ROW ACTION MENU ══════════════ -->
+<!-- One shared menu, moved to whichever row was clicked. -->
+<div class="row-menu" id="rowMenu" role="menu" hidden>
+  <button class="row-menu-item" data-act="suspend" role="menuitem">Suspend account</button>
+  <button class="row-menu-item" data-act="rename"  role="menuitem">Rename student</button>
+  <button class="row-menu-item" data-act="reset"   role="menuitem">Reset sign-in…</button>
+  <button class="row-menu-item" data-act="promote" role="menuitem" hidden>Make admin</button>
+  <div class="row-menu-sep" role="separator"></div>
+  <button class="row-menu-item danger" data-act="remove" role="menuitem">Delete account</button>
 </div>
 
 <!-- ══════════════ RENAME STUDENT MODAL ══════════════ -->
@@ -902,14 +984,45 @@ function renderRecentSignups() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Render users table
 // ─────────────────────────────────────────────────────────────────────────────
+// Search text and status filter live outside the render so every snapshot
+// redraw keeps whatever the admin was already looking at.
+let userSearch = "";
+let userFilter = "all";
+
+// "Hari Krishnan" → "HK", "priyanka" → "P". Only ever used for decoration, so
+// anything unexpected can safely fall back to a single character.
+function initials(name) {
+  const parts = String(name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
 function renderUsersTable() {
   const tbody = document.getElementById("usersTbody");
-  const list  = Object.values(allUsers);
+  const all   = Object.values(allUsers);
 
-  document.getElementById("userCountBadge").textContent = list.length;
+  // The badge counts the whole roster, not the filtered view — otherwise
+  // typing in the search box looks like students have gone missing.
+  document.getElementById("userCountBadge").textContent = all.length;
 
+  const q = userSearch.trim().toLowerCase();
+  const list = all.filter(u => {
+    const suspended = u.status === "suspended";
+    if (userFilter === "active"    &&  suspended) return false;
+    if (userFilter === "suspended" && !suspended) return false;
+    if (!q) return true;
+    return String(u.fullName ?? "").toLowerCase().includes(q)
+        || String(u.username ?? "").toLowerCase().includes(q);
+  });
+
+  // An empty roster and an empty search result are different problems, and the
+  // advice for each is different too.
+  if (!all.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No students yet. Click "Add User" to create one.</td></tr>`;
+    return;
+  }
   if (!list.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No users yet. Click "Add User" to create one.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No student matches that search.</td></tr>`;
     return;
   }
 
@@ -926,46 +1039,119 @@ function renderUsersTable() {
     // with the rules, or it shows a lock that isn't really there.
     const suspended    = u.status === "suspended";
     const alreadyAdmin = !!(u.uid && allAdmins[u.uid]);
+    const name         = u.fullName ?? u.username;
     return `
-      <tr>
-        <td class="ink" style="font-weight:600">${esc(u.fullName ?? u.username)}</td>
-        <td class="mono" style="font-size:12px;color:var(--ink-dim)">@${esc(u.username)}</td>
-        <td style="font-size:12px">${esc(relTime(u.createdAt))}</td>
-        <td style="font-size:12px">${esc(relTime(u.lastLogin))}</td>
+      <tr class="${suspended ? "is-suspended" : ""}">
+        <td>
+          <div class="who">
+            <div class="avatar" aria-hidden="true">${esc(initials(name))}</div>
+            <div style="min-width:0">
+              <div class="who-name">${esc(name)}</div>
+              <div class="who-handle">@${esc(u.username)}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:12px;white-space:nowrap">${esc(relTime(u.createdAt))}</td>
+        <td style="font-size:12px;white-space:nowrap">${esc(relTime(u.lastLogin))}</td>
         <td style="white-space:nowrap">
           <span class="chip ${suspended ? "suspended" : "active"}">${suspended ? "Suspended" : "Active"}</span>
           ${alreadyAdmin ? `<span class="role-badge admin" style="margin-left:5px">admin</span>` : ""}
         </td>
-        <td>
-          <div class="row-actions">
-            <button class="pill ${suspended ? "success" : "ghost"} suspend-user-btn"
-              data-username="${esc(u.username)}">${suspended ? "Reactivate" : "Suspend"}</button>
-            <button class="pill ghost rename-user-btn"
-              data-username="${esc(u.username)}">Rename</button>
-            <button class="pill ghost reset-user-btn"
-              data-username="${esc(u.username)}">Reset sign-in</button>
-            ${alreadyAdmin ? "" : `<button class="pill success owner-only promote-user-btn"
-              data-username="${esc(u.username)}">↑ Make admin</button>`}
-            <button class="pill danger delete-user-btn"
-              data-username="${esc(u.username)}">Delete</button>
-          </div>
+        <td style="text-align:right">
+          <button class="row-menu-btn" data-username="${esc(u.username)}"
+                  aria-haspopup="menu" aria-label="Actions for ${esc(name)}">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+              <circle cx="7" cy="3" r="1.35"/><circle cx="7" cy="7" r="1.35"/><circle cx="7" cy="11" r="1.35"/>
+            </svg>
+          </button>
         </td>
       </tr>`;
   }).join("");
 }
 
-// Event delegation — keeps usernames out of inline onclick attributes, where
-// a quote in the value would break out into executable markup.
-document.getElementById("usersTbody").addEventListener("click", e => {
-  const btn = e.target.closest("button[data-username]");
-  if (!btn) return;
-  const username = btn.dataset.username;
-  if      (btn.classList.contains("suspend-user-btn")) toggleSuspend(username);
-  else if (btn.classList.contains("rename-user-btn"))  openRename(username);
-  else if (btn.classList.contains("reset-user-btn"))   openResetCmd(username);
-  else if (btn.classList.contains("promote-user-btn")) promoteToAdmin(username);
-  else if (btn.classList.contains("delete-user-btn"))  deleteUser(username);
+// ── Toolbar: search + status filter ──────────────────────────────────────────
+document.getElementById("userSearch").addEventListener("input", e => {
+  userSearch = e.target.value;
+  closeRowMenu();
+  renderUsersTable();
 });
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    userFilter = btn.dataset.filter;
+    document.querySelectorAll(".filter-btn").forEach(b => {
+      const on = b === btn;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    closeRowMenu();
+    renderUsersTable();
+  });
+});
+
+// ── Row overflow menu ────────────────────────────────────────────────────────
+// One shared menu rather than five buttons on every row: the table stays
+// readable at any width, and Delete sits a deliberate step further away than
+// Suspend, which is the action that actually gets used day to day. Event
+// delegation keeps usernames out of inline onclick attributes, where a quote in
+// the value would break out into executable markup.
+const rowMenu = document.getElementById("rowMenu");
+let rowMenuUser = null;
+
+function closeRowMenu() {
+  rowMenu.hidden = true;
+  rowMenuUser = null;
+}
+
+function openRowMenu(username, anchor) {
+  const u = allUsers[username];
+  if (!u) return;
+  rowMenuUser = username;
+  const suspended    = u.status === "suspended";
+  const alreadyAdmin = !!(u.uid && allAdmins[u.uid]);
+
+  const item = act => rowMenu.querySelector(`[data-act="${act}"]`);
+  item("suspend").textContent = suspended ? "Reactivate account" : "Suspend account";
+  // Promotion is an owner power, and nobody is promoted twice. The rules refuse
+  // it regardless; hiding it just keeps the menu honest about what will work.
+  item("promote").hidden = alreadyAdmin || ME.role !== "owner";
+
+  rowMenu.hidden = false;
+  // Anchor under the button, then pull back inside the viewport when the row
+  // sits near an edge.
+  const r = anchor.getBoundingClientRect();
+  const m = rowMenu.getBoundingClientRect();
+  rowMenu.style.left = `${Math.max(8, Math.min(r.right - m.width, window.innerWidth - m.width - 8))}px`;
+  rowMenu.style.top  = `${r.bottom + m.height > window.innerHeight - 8 ? r.top - m.height - 6 : r.bottom + 6}px`;
+}
+
+document.getElementById("usersTbody").addEventListener("click", e => {
+  const btn = e.target.closest(".row-menu-btn");
+  if (!btn) return;
+  e.stopPropagation();
+  // A second click on the same row's button closes it again.
+  if (rowMenuUser === btn.dataset.username) { closeRowMenu(); return; }
+  openRowMenu(btn.dataset.username, btn);
+});
+
+rowMenu.addEventListener("click", e => {
+  const btn = e.target.closest("[data-act]");
+  if (!btn || !rowMenuUser) return;
+  const username = rowMenuUser;
+  closeRowMenu();
+  ({
+    suspend: toggleSuspend,
+    rename:  openRename,
+    reset:   openResetCmd,
+    promote: promoteToAdmin,
+    remove:  deleteUser,
+  })[btn.dataset.act]?.(username);
+});
+
+document.addEventListener("click", closeRowMenu);
+window.addEventListener("resize", closeRowMenu);
+// Capture phase: the menu is position:fixed, so a scroll anywhere beneath it
+// would otherwise strand it beside the wrong row.
+window.addEventListener("scroll", closeRowMenu, true);
 
 // ── Suspend / reactivate ─────────────────────────────────────────────────────
 // Flips users/{username}.status. The button is only the switch: firestore.rules
@@ -1200,7 +1386,7 @@ document.getElementById("addUserBtn").addEventListener("click", openModal);
 document.getElementById("cancelAddUser").addEventListener("click", closeModal);
 addModal.addEventListener("click", e => { if (e.target === addModal) closeModal(); });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal(); closePwModal(); closeRename(); closeCmd(); }
+  if (e.key === "Escape") { closeModal(); closePwModal(); closeRename(); closeCmd(); closeRowMenu(); }
 });
 
 addForm.addEventListener("submit", async e => {

@@ -203,11 +203,17 @@ function schedulePush() {
   clearTimeout(pushTimer);
   pushTimer = setTimeout(async () => {
     try {
-      await setDoc(doc(db, "progress", activeUsername), {
+      const payload = {
         username:  activeUsername,
         [COURSE]:  readLocal(),
         updatedAt: serverTimestamp(),
-      }, { merge: true });
+      };
+      // The engine publishes its counts together with their totals, so the
+      // admin dashboard can show a percentage without knowing anything about
+      // how much content each course holds. Absent on a stale tab that has not
+      // run refreshProgress() yet, which is why it is written conditionally.
+      if (window.__progressSummary) payload.summary = { [COURSE]: window.__progressSummary };
+      await setDoc(doc(db, "progress", activeUsername), payload, { merge: true });
     } catch (e) { console.warn("[sync] push failed", e); }
   }, 1500);
 }
@@ -235,6 +241,9 @@ window.__clearRemoteProgress = async () => {
   try {
     await updateDoc(doc(db, "progress", activeUsername), {
       [COURSE]:  {},
+      // Clear the mirrored summary too, or the dashboard would keep reporting
+      // the progress the student just deliberately wiped.
+      [`summary.${COURSE}`]: null,
       updatedAt: serverTimestamp(),
     });
   } catch (e) {

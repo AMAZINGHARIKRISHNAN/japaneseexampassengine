@@ -278,6 +278,32 @@
       position:absolute; width:1px; height:1px; padding:0; margin:-1px;
       overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
     }
+
+    /* ─────────── PROGRESS CARDS ─────────── */
+    .prog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px; }
+    .prog-card {
+      background:var(--surface); border:1px solid var(--line);
+      border-radius:var(--radius); padding:16px 18px;
+    }
+    .prog-card.is-suspended { opacity:.55; }
+    .prog-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .prog-score { text-align:right; flex-shrink:0; }
+    .prog-score b { display:block; font-size:25px; font-weight:800; line-height:1; color:var(--jade); }
+    .prog-score.mid b { color:var(--gold); }
+    .prog-score.low b { color:var(--vermilion); }
+    .prog-score span { font-size:9.5px; text-transform:uppercase; letter-spacing:1.3px; color:var(--ink-faint); }
+    .prog-row { display:grid; grid-template-columns:74px 1fr 52px; gap:9px; align-items:center; margin-bottom:7px; font-size:11.5px; }
+    .prog-row:last-child { margin-bottom:0; }
+    .prog-name { color:var(--ink-dim); }
+    .bar { height:6px; background:var(--bg); border:1px solid var(--line); border-radius:99px; overflow:hidden; }
+    .bar i { display:block; height:100%; background:var(--indigo); border-radius:99px; transition:width .35s ease; }
+    .prog-val { text-align:right; color:var(--ink-faint); font-family:var(--mono); font-size:10.5px; }
+    .prog-none { font-size:11.5px; color:var(--ink-faint); font-style:italic; line-height:1.55; }
+    .prog-foot {
+      margin-top:13px; padding-top:11px; border-top:1px solid var(--line);
+      font-size:10.5px; color:var(--ink-faint);
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
     /* A command the admin must run in a terminal, shown for the jobs a browser
        genuinely cannot do rather than a button that quietly fails. */
     .cmd-box { display:flex; background:var(--bg); border:1px solid var(--line);
@@ -463,6 +489,7 @@
   <button class="tab-btn" data-tab="users">
     Users <span class="tab-badge blue" id="userCountBadge">0</span>
   </button>
+  <button class="tab-btn" data-tab="progress">Progress</button>
   <button class="tab-btn" data-tab="activity">
     Activity <span class="tab-badge green" id="activityCountBadge">0</span>
   </button>
@@ -535,7 +562,7 @@
         <input id="userSearch" type="search" placeholder="Search name or username"
                autocomplete="off" spellcheck="false" aria-label="Search students">
       </div>
-      <div class="filter-group" role="group" aria-label="Filter by status">
+      <div class="filter-group" id="userFilters" role="group" aria-label="Filter by status">
         <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
         <button class="filter-btn" data-filter="active" aria-pressed="false">Active</button>
         <button class="filter-btn" data-filter="suspended" aria-pressed="false">Suspended</button>
@@ -561,6 +588,22 @@
 </div>
 
 <!-- ══════════════ TAB: ACTIVITY ══════════════ -->
+<!-- ══════════════ TAB: PROGRESS ══════════════ -->
+<div id="tab-progress" class="tab-panel">
+  <div class="page">
+    <div class="users-hdr">
+      <span class="sec-label">Class Progress</span>
+      <div class="sec-divider"></div>
+      <div class="filter-group" id="progCourse" role="group" aria-label="Course">
+        <button class="filter-btn active" data-course="n3" aria-pressed="true">N3</button>
+        <button class="filter-btn" data-course="n4" aria-pressed="false">N4</button>
+      </div>
+    </div>
+    <div class="stats-grid" id="progStats"></div>
+    <div class="prog-grid" id="progGrid"></div>
+  </div>
+</div>
+
 <div id="tab-activity" class="tab-panel">
   <div class="page">
     <div class="sec-hdr">
@@ -1075,10 +1118,13 @@ document.getElementById("userSearch").addEventListener("input", e => {
   closeRowMenu();
   renderUsersTable();
 });
-document.querySelectorAll(".filter-btn").forEach(btn => {
+// Scoped to this toolbar: the Progress tab reuses .filter-btn for its own
+// course toggle, and an unscoped query would wire the two together.
+const userFilters = document.getElementById("userFilters");
+userFilters.querySelectorAll(".filter-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     userFilter = btn.dataset.filter;
-    document.querySelectorAll(".filter-btn").forEach(b => {
+    userFilters.querySelectorAll(".filter-btn").forEach(b => {
       const on = b === btn;
       b.classList.toggle("active", on);
       b.setAttribute("aria-pressed", String(on));
@@ -1328,6 +1374,8 @@ function subscribeUsers() {
     renderRecentSignups();
     updateOverviewStats();
     renderPromoteGrid();
+    // The progress view is driven off the roster, so it redraws with it.
+    renderProgress();
   }, err => console.error("[Users snapshot]", err));
 }
 
@@ -1611,10 +1659,183 @@ document.getElementById("promoteGrid").addEventListener("click", e => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Progress tab — how each student is actually going
+// ─────────────────────────────────────────────────────────────────────────────
+// The engines mirror their own counts *and totals* into progress/{username}
+// (see progress-sync.js), so nothing here needs to know how many grammar
+// points or kanji a course contains — content can grow without this view
+// quietly overstating anyone. A student who has not reopened the engine since
+// summaries were introduced has counts but no totals; we report what they have
+// finished rather than invent a denominator for it.
+let allProgress   = {};
+let progCourse    = "n3";
+let unsubProgress = null;
+
+function subscribeProgress() {
+  if (unsubProgress) unsubProgress();
+  unsubProgress = onSnapshot(collection(db, "progress"), snap => {
+    allProgress = {};
+    snap.docs.forEach(d => { allProgress[d.id] = d.data(); });
+    renderProgress();
+  }, err => console.error("[Progress snapshot]", err));
+}
+
+function daysUntilExam(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  // An exam stays "today" until the end of its own day, matching the engines.
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  return Math.ceil((end.getTime() - Date.now()) / 86400000);
+}
+
+function examFmt(iso) {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? "—"
+    : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Every truthy flag across a course's sections. Only used as the fallback when
+// the engine has not published a summary yet.
+function rawDoneCount(courseState) {
+  if (!courseState || typeof courseState !== "object") return 0;
+  return Object.values(courseState).reduce((n, section) =>
+    n + (section && typeof section === "object" && !Array.isArray(section)
+      ? Object.values(section).filter(Boolean).length
+      : 0), 0);
+}
+
+// Driven off the roster rather than the progress collection: a progress doc can
+// outlive a deleted profile, and a student who has never studied still belongs
+// in the class list as "not started" instead of silently missing.
+function progressRows() {
+  return Object.values(allUsers).map(u => {
+    const p    = allProgress[u.username] ?? null;
+    const sum  = p?.summary?.[progCourse] ?? null;
+    const done = rawDoneCount(p?.[progCourse]);
+    return {
+      u, sum, done,
+      overall:   typeof sum?.overall === "number" ? sum.overall : null,
+      updatedAt: p?.updatedAt ?? null,
+      exam:      p?.examDates?.[progCourse] ?? null,
+      started:   !!sum || done > 0,
+    };
+  });
+}
+
+function renderProgress() {
+  const grid = document.getElementById("progGrid");
+  const rows = progressRows();
+  const course = progCourse.toUpperCase();
+
+  const started = rows.filter(r => r.started);
+  const scored  = rows.filter(r => r.overall !== null);
+  const avg     = scored.length
+    ? Math.round(scored.reduce((n, r) => n + r.overall, 0) / scored.length)
+    : 0;
+  const weekAgo = Date.now() - 7 * 86400000;
+  const active  = rows.filter(r => (r.updatedAt?.toMillis?.() ?? 0) > weekAgo).length;
+
+  document.getElementById("progStats").innerHTML = `
+    <div class="stat col-blue">
+      <div class="s-label">Studying</div>
+      <div class="s-val">${esc(started.length)}</div>
+      <div class="s-sub">of ${esc(rows.length)} on the roster</div>
+    </div>
+    <div class="stat col-green">
+      <div class="s-label">Class average</div>
+      <div class="s-val">${esc(avg)}%</div>
+      <div class="s-sub">${scored.length
+        ? `across ${esc(scored.length)} student${scored.length === 1 ? "" : "s"}`
+        : "no data yet"}</div>
+    </div>
+    <div class="stat col-gold">
+      <div class="s-label">Active this week</div>
+      <div class="s-val" style="font-size:30px;margin-top:0">${esc(active)}</div>
+      <div class="s-sub">synced in the last 7 days</div>
+    </div>
+    <div class="stat col-red">
+      <div class="s-label">Not started</div>
+      <div class="s-val">${esc(rows.length - started.length)}</div>
+      <div class="s-sub">no ${esc(course)} activity yet</div>
+    </div>`;
+
+  if (!rows.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="em-icon">📗</div>No students on the roster yet.</div>`;
+    return;
+  }
+
+  // Furthest along first, then whoever has done the most, then by name.
+  rows.sort((a, b) =>
+    (b.overall ?? -1) - (a.overall ?? -1) ||
+    b.done - a.done ||
+    String(a.u.fullName ?? a.u.username).localeCompare(String(b.u.fullName ?? b.u.username)));
+
+  grid.innerHTML = rows.map(r => {
+    const name      = r.u.fullName ?? r.u.username;
+    const suspended = r.u.status === "suspended";
+    const tone      = r.overall === null || r.overall >= 60 ? "" : r.overall >= 30 ? "mid" : "low";
+    const days      = r.exam ? daysUntilExam(r.exam) : null;
+
+    const body = r.sum
+      ? (r.sum.sections ?? []).map(([label, done, total]) => {
+          const width = total ? Math.min(100, Math.round(done / total * 100)) : 0;
+          return `
+            <div class="prog-row">
+              <span class="prog-name">${esc(label)}</span>
+              <span class="bar"><i style="width:${width}%"></i></span>
+              <span class="prog-val">${esc(done)}/${esc(total)}</span>
+            </div>`;
+        }).join("")
+      : r.done > 0
+        ? `<div class="prog-none">${esc(r.done)} item${r.done === 1 ? "" : "s"} completed. The breakdown appears once they next open the ${esc(course)} engine.</div>`
+        : `<div class="prog-none">Hasn't opened the ${esc(course)} engine yet.</div>`;
+
+    return `
+      <div class="prog-card${suspended ? " is-suspended" : ""}">
+        <div class="prog-top">
+          <div class="who">
+            <div class="avatar" aria-hidden="true">${esc(initials(name))}</div>
+            <div style="min-width:0">
+              <div class="who-name">${esc(name)}</div>
+              <div class="who-handle">@${esc(r.u.username)}</div>
+            </div>
+          </div>
+          <div class="prog-score ${tone}">
+            <b>${r.overall === null ? "—" : esc(r.overall) + "%"}</b>
+            <span>exam-ready</span>
+          </div>
+        </div>
+        ${body}
+        <div class="prog-foot">
+          <span>${r.updatedAt ? "Synced " + esc(relTime(r.updatedAt)) : "Never synced"}</span>
+          <span>${r.exam
+            ? `Exam ${esc(examFmt(r.exam))}${days !== null && days >= 0 ? ` · ${esc(days)}d left` : ""}`
+            : "No exam date set"}</span>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+const progCourseEl = document.getElementById("progCourse");
+progCourseEl.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    progCourse = btn.dataset.course;
+    progCourseEl.querySelectorAll(".filter-btn").forEach(b => {
+      const on = b === btn;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    renderProgress();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────────────────────────────────────
 subscribeUsers();
 subscribeLoginLog();
+subscribeProgress();
 meReady.then(() => subscribeAdmins());
 </script>
 <script src="version-badge.js" defer></script>

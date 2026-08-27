@@ -3056,6 +3056,15 @@ function refreshProgress(){
   $("#kRead").textContent=`${rDone}/${PASSAGES.length}`;
   const overall=Math.round((pct(gDone,GRAMMAR.length)+pct(vDone,vTotal)+pct(rDone,PASSAGES.length)+pct(cDone,CHECKLIST.length))/4);
   $("#kOverall").textContent=overall+"%";
+  /* Same contract as the N3 engine: publish the counts with their totals so
+     progress-sync.js can mirror them and the admin dashboard stays ignorant of
+     how many passages or cards this course happens to contain. N4 has no kanji
+     section, so its summary is four rows where N3 has five. */
+  window.__progressSummary={overall,sections:[
+    ["Grammar",gDone,GRAMMAR.length],
+    ["Vocabulary",vDone,vTotal],
+    ["Reading",rDone,PASSAGES.length],
+    ["Checklist",cDone,CHECKLIST.length]]};
   // trackers (if review rendered)
   const tb=$("#trackBox");
   if(tb){

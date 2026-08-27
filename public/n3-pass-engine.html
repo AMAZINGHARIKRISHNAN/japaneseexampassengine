@@ -4620,6 +4620,16 @@ function refreshProgress(){
   $("#kKanji").textContent=`${kDone}/${KANJI.length}`;
   const overall=Math.round((pct(gDone,GRAMMAR.length)+pct(vDone,vTotal)+pct(rDone,PASSAGES_N3.length)+pct(kDone,KANJI.length)+pct(cDone,CHECKLIST.length))/5);
   $("#kOverall").textContent=overall+"%";
+  /* Publish exactly the numbers the hero shows, so progress-sync.js can mirror
+     them and the admin dashboard never has to duplicate the content constants
+     to work out a percentage. Totals travel with the counts, so a deck growing
+     by fifty cards cannot silently inflate everyone's completion. */
+  window.__progressSummary={overall,sections:[
+    ["Grammar",gDone,GRAMMAR.length],
+    ["Vocabulary",vDone,vTotal],
+    ["Reading",rDone,PASSAGES_N3.length],
+    ["Kanji",kDone,KANJI.length],
+    ["Checklist",cDone,CHECKLIST.length]]};
 }
 refreshProgress();
 

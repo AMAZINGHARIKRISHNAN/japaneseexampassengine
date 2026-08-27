@@ -34,6 +34,19 @@ service cloud.firestore {
     function userExists(username) {
       return exists(/databases/$(database)/documents/users/$(username));
     }
+    function userData(username) {
+      return get(/databases/$(database)/documents/users/$(username)).data;
+    }
+    // A suspended student keeps their account and all their study data, but
+    // every data path below is closed to them until an admin lifts it. The
+    // check lives here and not in the page, because a hidden button is not a
+    // boundary. Every creation path writes status, but a doc that predates the
+    // field must still read as active rather than being locked out by accident.
+    function userActive(username) {
+      return userExists(username)
+        && (!('status' in userData(username))
+            || userData(username).status != 'suspended');
+    }
 
     // Admin allowlist. Owners may grant and revoke admin access from the
     // dashboard; everything below is written so that the worst a compromised
@@ -118,17 +131,17 @@ service cloud.firestore {
 
     // Mock-test scores — each student reads/writes only their own
     match /mock_scores/{username} {
-      allow read, write: if isAdmin() || (isUser(username) && userExists(username));
+      allow read, write: if isAdmin() || (isUser(username) && userActive(username));
     }
     match /mock_scores_n4/{username}/attempts/{attempt} {
-      allow read, write: if isAdmin() || (isUser(username) && userExists(username));
+      allow read, write: if isAdmin() || (isUser(username) && userActive(username));
     }
 
     // Study progress + chosen exam dates, mirrored from the engines' local
     // state so it follows a student between devices. Kept out of users/ so the
     // admin's account listing doesn't drag every student's full state with it.
     match /progress/{username} {
-      allow read, write: if isAdmin() || (isUser(username) && userExists(username));
+      allow read, write: if isAdmin() || (isUser(username) && userActive(username));
     }
 
     // Retired collections. Everything below is closed rather than deleted, so a

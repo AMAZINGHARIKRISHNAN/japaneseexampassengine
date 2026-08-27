@@ -619,6 +619,16 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
       return;
     }
 
+    // Suspended accounts are turned away before anything else — including the
+    // admin branch below, so suspending a promoted student really does lock
+    // them out rather than dropping them into the dashboard. firestore.rules
+    // closes their data either way; this is what makes the door say so.
+    if (userSnap.data().status === "suspended") {
+      await signOut(auth);
+      setStatus("error", "This account is suspended. Please contact your teacher.");
+      return;
+    }
+
     // A student who has since been promoted signs in exactly as before but
     // belongs in the admin dashboard.
     if ((await getDoc(doc(db, "admins", cred.user.uid))).exists()) {

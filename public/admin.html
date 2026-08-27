@@ -216,6 +216,17 @@
     .chip.denied-by-admin   { background:var(--verm-bg); color:#f08080;     border:1px solid var(--verm-dim); }
     .chip.wrong { background:#2a1a2a; color:var(--rose); border:1px solid var(--rose-dim); }
     .chip.none   { background:transparent; color:var(--ink-faint); border:1px solid var(--line); }
+    .chip.active     { background:var(--jade-bg); color:var(--jade); border:1px solid var(--jade-dim); }
+    .chip.suspended  { background:var(--verm-bg); color:#f08080;    border:1px solid var(--verm-dim); }
+    /* Row actions wrap rather than widening the Actions column on a narrow screen. */
+    .row-actions { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+    .row-actions .pill { font-size:11px; padding:4px 9px; }
+    /* A command the admin must run in a terminal, shown for the jobs a browser
+       genuinely cannot do rather than a button that quietly fails. */
+    .cmd-box { display:flex; background:var(--bg); border:1px solid var(--line);
+               border-radius:7px; padding:10px 12px; }
+    .cmd-box code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px;
+                    color:var(--ink); word-break:break-all; line-height:1.55; }
 
     /* ─────────── USERS SECTION HEADER ─────────── */
     .users-hdr { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
@@ -466,11 +477,12 @@
             <th>Username</th>
             <th>Joined</th>
             <th>Last Sign-in</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="usersTbody">
-          <tr class="empty-row"><td colspan="5">Loading users…</td></tr>
+          <tr class="empty-row"><td colspan="6">Loading users…</td></tr>
         </tbody>
       </table>
     </div>
@@ -584,6 +596,49 @@
   </div>
 </div>
 
+<!-- ══════════════ RENAME STUDENT MODAL ══════════════ -->
+<div class="modal-overlay" id="renameModal" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
+  <div class="modal-card">
+    <div class="modal-title" id="renameTitle">Rename Student</div>
+    <form id="renameForm" autocomplete="off" novalidate>
+      <div class="m-field">
+        <label for="renameName">Full Name</label>
+        <input id="renameName" type="text" autocomplete="off" spellcheck="false">
+        <div class="m-hint">
+          Their sign-in name stays
+          <span id="renameCurrent" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace"></span>.
+          Spelling, spacing and capitalisation can change; anything that would move
+          the sign-in name would lock them out.
+        </div>
+      </div>
+      <div class="modal-err" id="renameErr"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cancelRename">Cancel</button>
+        <button type="submit" class="btn-primary">Save Name</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════ TERMINAL COMMAND MODAL ══════════════ -->
+<!-- For the two jobs a browser cannot do: re-pointing another account's
+     credential, and deleting it outright. -->
+<div class="modal-overlay" id="cmdModal" role="dialog" aria-modal="true" aria-labelledby="cmdTitle">
+  <div class="modal-card">
+    <div class="modal-title" id="cmdTitle">Run this command</div>
+    <p style="font-size:12.5px;color:var(--ink-dim);line-height:1.65;margin:0 0 14px">
+      A browser can only change the credential of the account it is signed in as,
+      so this step runs from a terminal in the project folder.
+    </p>
+    <div class="cmd-box"><code id="cmdText"></code></div>
+    <div class="m-hint" id="cmdCopied" style="min-height:16px"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="cmdCopy">Copy</button>
+      <button type="button" class="btn-primary" id="cmdClose">Done</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 // ─────────────────────────────────────────────────────────────────────────────
 // Firebase v11 imports
@@ -591,7 +646,7 @@
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import {
-  getFirestore, doc, getDoc, setDoc, deleteDoc,
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
   collection, query, orderBy, limit, onSnapshot, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import {
@@ -854,7 +909,7 @@ function renderUsersTable() {
   document.getElementById("userCountBadge").textContent = list.length;
 
   if (!list.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No users yet. Click "Add User" to create one.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No users yet. Click "Add User" to create one.</td></tr>`;
     return;
   }
 
@@ -865,41 +920,181 @@ function renderUsersTable() {
     return tb - ta;
   });
 
-  tbody.innerHTML = list.map(u => `
+  tbody.innerHTML = list.map(u => {
+    // Profiles created before suspension existed carry no status field, and
+    // firestore.rules reads a missing value as active — the table has to agree
+    // with the rules, or it shows a lock that isn't really there.
+    const suspended    = u.status === "suspended";
+    const alreadyAdmin = !!(u.uid && allAdmins[u.uid]);
+    return `
       <tr>
         <td class="ink" style="font-weight:600">${esc(u.fullName ?? u.username)}</td>
         <td class="mono" style="font-size:12px;color:var(--ink-dim)">@${esc(u.username)}</td>
         <td style="font-size:12px">${esc(relTime(u.createdAt))}</td>
         <td style="font-size:12px">${esc(relTime(u.lastLogin))}</td>
-        <td>
-          <button class="pill danger delete-user-btn" style="font-size:11px;padding:4px 10px"
-            data-username="${esc(u.username)}">Delete</button>
+        <td style="white-space:nowrap">
+          <span class="chip ${suspended ? "suspended" : "active"}">${suspended ? "Suspended" : "Active"}</span>
+          ${alreadyAdmin ? `<span class="role-badge admin" style="margin-left:5px">admin</span>` : ""}
         </td>
-      </tr>
-    `).join("");
+        <td>
+          <div class="row-actions">
+            <button class="pill ${suspended ? "success" : "ghost"} suspend-user-btn"
+              data-username="${esc(u.username)}">${suspended ? "Reactivate" : "Suspend"}</button>
+            <button class="pill ghost rename-user-btn"
+              data-username="${esc(u.username)}">Rename</button>
+            <button class="pill ghost reset-user-btn"
+              data-username="${esc(u.username)}">Reset sign-in</button>
+            ${alreadyAdmin ? "" : `<button class="pill success owner-only promote-user-btn"
+              data-username="${esc(u.username)}">↑ Make admin</button>`}
+            <button class="pill danger delete-user-btn"
+              data-username="${esc(u.username)}">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join("");
 }
 
 // Event delegation — keeps usernames out of inline onclick attributes, where
 // a quote in the value would break out into executable markup.
 document.getElementById("usersTbody").addEventListener("click", e => {
-  const btn = e.target.closest(".delete-user-btn");
-  if (btn) deleteUser(btn.dataset.username);
+  const btn = e.target.closest("button[data-username]");
+  if (!btn) return;
+  const username = btn.dataset.username;
+  if      (btn.classList.contains("suspend-user-btn")) toggleSuspend(username);
+  else if (btn.classList.contains("rename-user-btn"))  openRename(username);
+  else if (btn.classList.contains("reset-user-btn"))   openResetCmd(username);
+  else if (btn.classList.contains("promote-user-btn")) promoteToAdmin(username);
+  else if (btn.classList.contains("delete-user-btn"))  deleteUser(username);
 });
 
+// ── Suspend / reactivate ─────────────────────────────────────────────────────
+// Flips users/{username}.status. The button is only the switch: firestore.rules
+// is what actually closes their progress and mock scores, and login.html is
+// what turns them away at the door.
+async function toggleSuspend(username) {
+  const u = allUsers[username];
+  if (!u) return;
+  const suspending = u.status !== "suspended";
+  const label = u.fullName || username;
+  if (!confirm(suspending
+    ? `Suspend ${label}?\n\nThey stay on the roster and keep every bit of their progress, but cannot sign in or sync until you reactivate them.`
+    : `Reactivate ${label}?\n\nThey will be able to sign in again straight away.`)) return;
+  try {
+    await updateDoc(doc(db, "users", username), { status: suspending ? "suspended" : "active" });
+  } catch (e) {
+    console.error("[Suspend]", e);
+    alert(e?.code === "permission-denied"
+      ? "Refused by the server — only an admin can change a student's status."
+      : "Could not update status: " + e.message);
+  }
+}
+
+// ── Rename ───────────────────────────────────────────────────────────────────
+// Only the display name is editable. The username is the document id, the
+// local-part of the Auth email, and what slugName() turns the typed name into
+// at sign-in — so a rename that would change the slug locks the student out.
+// Those go through the CLI as a delete and re-add, deliberately.
+let renameTarget = null;
+const renameModal = document.getElementById("renameModal");
+const renameErr   = document.getElementById("renameErr");
+
+function openRename(username) {
+  const u = allUsers[username];
+  if (!u) return;
+  renameTarget = username;
+  renameErr.textContent = "";
+  const input = document.getElementById("renameName");
+  input.value = u.fullName ?? "";
+  document.getElementById("renameCurrent").textContent = `@${username}`;
+  renameModal.classList.add("open");
+  input.focus();
+  input.select();
+}
+function closeRename() {
+  renameModal.classList.remove("open");
+  renameTarget = null;
+  renameErr.textContent = "";
+}
+
+document.getElementById("renameForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!renameTarget) return;
+  const next = document.getElementById("renameName").value.trim().replace(/\s+/g, " ");
+  if (!next)            { renameErr.textContent = "Enter a name."; return; }
+  if (next.length > 80) { renameErr.textContent = "Name must be 80 characters or fewer."; return; }
+  if (slugName(next) !== renameTarget) {
+    renameErr.textContent =
+      `That would move their sign-in name to "@${slugName(next)}" and lock them out. ` +
+      `Spelling, spacing and capitalisation can change here — anything more needs the CLI.`;
+    return;
+  }
+  try {
+    await updateDoc(doc(db, "users", renameTarget), { fullName: next });
+    closeRename();
+  } catch (err) {
+    console.error("[Rename]", err);
+    renameErr.textContent = err?.code === "permission-denied"
+      ? "Refused by the server."
+      : "Could not rename: " + err.message;
+  }
+});
+
+// ── Terminal-command hand-off ────────────────────────────────────────────────
+// A browser can only manage the credential of the account it is signed in as,
+// so changing a student's date of birth and deleting their Auth account are
+// both out of reach here. Hand over the exact command rather than offer a
+// button that quietly does half the job.
+const cmdModal = document.getElementById("cmdModal");
+function showCmd(title, command) {
+  document.getElementById("cmdTitle").textContent  = title;
+  document.getElementById("cmdText").textContent   = command;
+  document.getElementById("cmdCopied").textContent = "";
+  cmdModal.classList.add("open");
+}
+function closeCmd() { cmdModal.classList.remove("open"); }
+
+function openResetCmd(username) {
+  const u = allUsers[username];
+  if (!u) return;
+  const label = u.fullName || username;
+  showCmd(`Reset sign-in for ${label}`,
+    `node scripts/manage-auth.mjs set-dob "${label}" YYYY-MM-DD --service-account=service-account.json`);
+}
+
+document.getElementById("cmdCopy").addEventListener("click", async () => {
+  const note = document.getElementById("cmdCopied");
+  try {
+    await navigator.clipboard.writeText(document.getElementById("cmdText").textContent);
+    note.textContent = "Copied to clipboard.";
+  } catch {
+    note.textContent = "Copy blocked by the browser — select the text above instead.";
+  }
+});
+document.getElementById("cmdClose").addEventListener("click", closeCmd);
+cmdModal.addEventListener("click", e => { if (e.target === cmdModal) closeCmd(); });
+document.getElementById("cancelRename").addEventListener("click", closeRename);
+renameModal.addEventListener("click", e => { if (e.target === renameModal) closeRename(); });
+
 async function deleteUser(username) {
-  if (!confirm(`Delete user @${username}? This cannot be undone.`)) return;
+  const u = allUsers[username];
+  const label = u?.fullName || username;
+  if (!confirm(
+    `Delete ${label} (@${username})?\n\n` +
+    `This removes their profile and every trace of their access. It does NOT remove their ` +
+    `sign-in credential, so "@${username}" stays taken until you run the command shown next.\n\n` +
+    `To block them only for a while, cancel and use Suspend instead.`
+  )) return;
   try {
     await deleteDoc(doc(db, "users", username));
-    // The Firebase Auth account can't be deleted from the browser. Without a
-    // profile doc the login flow rejects it and the rules block all data
-    // access, but to fully remove the credential run:
-    //   node scripts/manage-auth.mjs delete <username>
-    alert(`@${username} deleted. To also remove their sign-in credential, run:\n  node scripts/manage-auth.mjs delete ${username}`);
+    // Without a profile doc the login flow rejects them and the rules block all
+    // data access — but the credential, and therefore the username, survives.
+    showCmd(`Finish removing ${label}`,
+      `node scripts/manage-auth.mjs delete "${label}" --service-account=service-account.json`);
   } catch (e) {
     console.error("[DeleteUser]", e);
     alert("Error deleting user. Check console.");
   }
-};
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Render activity log table
@@ -1004,7 +1199,9 @@ function closeModal() {
 document.getElementById("addUserBtn").addEventListener("click", openModal);
 document.getElementById("cancelAddUser").addEventListener("click", closeModal);
 addModal.addEventListener("click", e => { if (e.target === addModal) closeModal(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closePwModal(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal(); closePwModal(); closeRename(); closeCmd(); }
+});
 
 addForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -1097,6 +1294,9 @@ function subscribeAdmins() {
     document.getElementById("adminCountBadge").textContent = snap.size;
     renderAdminsTable();
     renderPromoteGrid();
+    // The users table badges existing admins and hides their promote button,
+    // so it has to redraw whenever the admin roster changes.
+    renderUsersTable();
   }, err => console.error("[Admins snapshot]", err));
 }
 

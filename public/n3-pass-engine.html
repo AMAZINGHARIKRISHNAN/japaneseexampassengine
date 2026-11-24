@@ -810,16 +810,37 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
 [data-version-badge] .vb-sep{opacity:.5}
 [data-version-badge] .vb-note{flex-basis:100%;text-align:center;font-size:10.5px;opacity:.85}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
+<script>(function(){var t=localStorage.getItem("n3.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 </head>
-<body>
-<div class="topbar">
-  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="side" aria-expanded="false">☰</button>
-  <span class="mark">N3 救急</span>
-  <span class="cd">Exam: <b id="cdTop">--d --:--</b></span>
-  <a href="dashboard.html" class="topbar-theme" title="Dashboard" style="text-decoration:none;margin-left:0">🏠</a>
-  <button class="topbar-theme" id="topbarThemeBtn" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">🌙</button>
-</div>
-<div class="scrim" id="scrim"></div>
+<body class="pe">
+<header class="dj-top" id="side">
+  <div class="dj-top-in">
+    <div class="dj-brand-row">
+      <a class="dj-brand" href="dashboard.html" title="Dashboard">
+        <span class="dj-mark" aria-hidden="true">救</span>
+        <span><span class="dj-name">N3 Pass Engine</span><br><span class="dj-sub">救急 · JLPT N3 grammar, vocab, kanji &amp; reading</span></span>
+      </a>
+      <div class="search-wrap" role="search">
+        <input type="search" class="search-box" id="searchBox"
+          placeholder="Search grammar, vocab, kanji… (/ or Ctrl+K)"
+          autocomplete="off" spellcheck="false"
+          aria-label="Search content" aria-expanded="false" aria-controls="searchDrop" aria-autocomplete="list">
+      </div>
+      <div class="dj-status">
+        <span class="dj-pill" title="Time until your exam">⏳ <b id="cdTop">--d --:--</b></span>
+        <span class="dj-pill" title="Active study time today">⏱ <b id="sideActiveTime">0 min</b></span>
+        <button class="dj-pill" id="topbarThemeBtn" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">🌙</button>
+        <a class="dj-pill" href="dashboard.html" title="Dashboard">🏠<span class="hide-s"> Dashboard</span></a>
+        <a class="dj-pill" href="n4-pass-engine.html" title="Switch to N4">⇄ N4</a>
+      </div>
+    </div>
+    <nav class="parts dj-tabs" id="nav" aria-label="Course sections"></nav>
+  </div>
+</header>
 <div class="search-drop" id="searchDrop" role="listbox" aria-label="Search results"></div>
 <div class="watermark jp">合格</div>
 <div class="watermark-2 jp">頑張</div>
@@ -849,75 +870,63 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
   </div>
 </div>
 <div class="shell">
-  <aside class="side" id="side">
-    <div class="brand"><span class="mark">救急</span><span class="sub">N3 Pass Engine</span></div>
-    <div class="countdown">
-      <div class="lbl" id="cdLabel" style="margin-bottom:6px">until JLPT N3</div>
-      <div class="cd-live">
-        <div class="cd-unit"><span class="cd-n" id="cdDays">-</span><span class="cd-u">days</span></div>
-        <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-n" id="cdHours">-</span><span class="cd-u">hrs</span></div>
-        <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-n" id="cdMins">-</span><span class="cd-u">min</span></div>
-        <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-n" id="cdSecs">-</span><span class="cd-u">sec</span></div>
-      </div>
-    </div>
-    <div class="active-time">
-      <span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-faint)">Active study time today</span>
-      <b id="sideActiveTime">0 min</b>
-    </div>
-    <button class="theme-btn" id="sideThemeBtn" aria-label="Toggle light/dark mode">
-      <span id="themeIcon">🌙</span><span id="themeLabel">Light mode</span>
-    </button>
-    <a class="theme-btn" href="dashboard.html" style="text-decoration:none">🏠 Dashboard</a>
-    <a class="theme-btn" href="n4-pass-engine.html" style="text-decoration:none">⇄ Switch to N4</a>
-    <div class="search-wrap" role="search">
-      <span class="search-ico" aria-hidden="true">🔍</span>
-      <input type="search" class="search-box" id="searchBox"
-        placeholder="Search grammar, vocab, kanji… (/ or Ctrl+K)"
-        autocomplete="off" spellcheck="false"
-        aria-label="Search content" aria-expanded="false" aria-controls="searchDrop" aria-autocomplete="list">
-    </div>
-    <nav class="parts" id="nav" aria-label="Course sections"></nav>
-    <div class="n4-promo">
-      <b>Coming from N4?</b>
-      Many cleared N4 using Harikrishnan's N4 system:<br>
-      <a href="n4-pass-engine.html">N4 Pass Engine →</a>
-    </div>
-    <button class="btn sm" id="resetBtn" style="margin:14px 6px 0;width:calc(100% - 12px)">Reset all progress</button>
-  </aside>
-
   <main>
-    <section class="hero">
-      <div class="seal jp">N3</div>
-      <h1><span id="heroDays">~30 days</span>. The N3 jump is real. <span class="jp">合格</span> — pass.</h1>
-      <p>N3 is where many learners hit a wall — vocabulary doubles, grammar gets nuanced, reading speed needs to triple. This isn't a textbook. It's a 30-day pass engine. Every example is shown four ways (kanji · hiragana · romaji · English) so you never get stuck. Every grammar point comes with the trap the exam will set. Every reading passage is timed.</p>
-      <div class="promo-banner">
-        <b>Just passed N4?</b> Harikrishnan's N4 system helped many clear it: <a href="n4-pass-engine.html">N4 Pass Engine →</a> Same builder, same engine — recalibrated for N3.
-      </div>
-      <button class="plan-btn" id="planBtn" onclick="openPlan()" aria-label="View 22-week road to December 6 study plan">
-        <span class="pico">🗺</span> Road to December 6 — 22-Week Plan
+    <div class="dj-dash">
+      <section class="hero dj-banner g-kon" data-wm="合">
+        <div class="dj-jlabel">合格への道 · N3</div>
+        <h1><span id="heroDays">~30 days</span>. The N3 jump is real. <span class="jp">合格</span> — pass.</h1>
+        <p>N3 is where many learners hit a wall — vocabulary doubles, grammar gets nuanced, reading speed needs to triple. This isn't a textbook. It's a 30-day pass engine. Every example is shown four ways (kanji · hiragana · romaji · English) so you never get stuck. Every grammar point comes with the trap the exam will set. Every reading passage is timed.</p>
+        <div class="row dj-hstats">
+          <div class="kpi"><b id="kGrammar">0/50</b>grammar locked</div>
+          <div class="kpi"><b id="kVocab">0%</b>vocab seen</div>
+          <div class="kpi"><b id="kRead">0/30</b>passages</div>
+          <div class="kpi"><b id="kKanji">0/156</b>kanji</div>
+          <div class="kpi"><b id="kOverall">0%</b>exam-ready</div>
+        </div>
+      </section>
+      <aside class="dj-side">
+        <div class="countdown dj-panel" title="Click to choose your exam date">
+          <div class="lbl" id="cdLabel">until JLPT N3</div>
+          <div class="cd-live">
+            <div class="cd-unit"><span class="cd-n" id="cdDays">-</span><span class="cd-u">days</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-unit"><span class="cd-n" id="cdHours">-</span><span class="cd-u">hrs</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-unit"><span class="cd-n" id="cdMins">-</span><span class="cd-u">min</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-unit"><span class="cd-n" id="cdSecs">-</span><span class="cd-u">sec</span></div>
+          </div>
+        </div>
+        <div class="promo-banner dj-panel">
+          <b>Just passed N4?</b> Harikrishnan's N4 system helped many clear it: <a href="n4-pass-engine.html">N4 Pass Engine →</a> Same builder, same engine — recalibrated for N3.
+        </div>
+      </aside>
+    </div>
+    <div class="dj-games">
+      <button class="dj-game plan-btn" id="planBtn" onclick="openPlan()" aria-label="View 22-week road to December 6 study plan">
+        <span class="dj-game-k" aria-hidden="true">道</span>
+        <span><b>Road to December 6</b><small>🗺 22-Week Plan</small></span>
       </button>
-      <a href="n3-mock-test.html" style="display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:11px 18px;background:var(--verm-bg);border:1px solid var(--vermilion-dim);border-radius:10px;color:var(--vermilion);font-weight:700;font-size:13px;text-decoration:none;transition:background .15s" onmouseover="this.style.background='#3a1a18'" onmouseout="this.style.background='var(--verm-bg)'">
-        📋 Full JLPT N3 Mock Test — 101 Questions · Exam &amp; Practice Mode
+      <a class="dj-game" href="n3-mock-test.html">
+        <span class="dj-game-k" aria-hidden="true">模</span>
+        <span><b>Full JLPT N3 Mock Test</b><small>📋 101 Questions · Exam &amp; Practice Mode</small></span>
       </a>
-      <a href="n3-stats.html" style="display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:11px 18px;background:var(--indigo-bg);border:1px solid var(--indigo-dim);border-radius:10px;color:var(--indigo);font-weight:700;font-size:13px;text-decoration:none;transition:background .15s" onmouseover="this.style.background='#1e2244'" onmouseout="this.style.background='var(--indigo-bg)'">
-        📊 My Stats &amp; Progress — Score History · Section Analysis
+      <a class="dj-game" href="n3-boost.html">
+        <span class="dj-game-k" aria-hidden="true">強</span>
+        <span><b>N3 Boost Drills</b><small>⚡ Targeted Quick Practice by Question Type</small></span>
       </a>
-      <a href="n3-boost.html" style="display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:11px 18px;background:#16241c;border:1px solid #2c6347;border-radius:10px;color:#5fc28a;font-weight:700;font-size:13px;text-decoration:none;transition:background .15s" onmouseover="this.style.background='#1a2e22'" onmouseout="this.style.background='#16241c'">
-        ⚡ N3 Boost Drills — Targeted Quick Practice by Question Type
+      <a class="dj-game" href="n3-stats.html">
+        <span class="dj-game-k" aria-hidden="true">績</span>
+        <span><b>My Stats &amp; Progress</b><small>📊 Score History · Section Analysis</small></span>
       </a>
-      <div class="row">
-        <div class="kpi"><b id="kGrammar">0/50</b>grammar locked</div>
-        <div class="kpi"><b id="kVocab">0%</b>vocab seen</div>
-        <div class="kpi"><b id="kRead">0/30</b>passages</div>
-        <div class="kpi"><b id="kKanji">0/156</b>kanji</div>
-        <div class="kpi"><b id="kOverall">0%</b>exam-ready</div>
-      </div>
-    </section>
+    </div>
     <div id="parts"></div>
     <div class="footer">
+      <div class="n4-promo">
+        <b>Coming from N4?</b>
+        Many cleared N4 using Harikrishnan's N4 system:<br>
+        <a href="n4-pass-engine.html">N4 Pass Engine →</a>
+      </div>
       <div class="promo">
         <b>Built by Harikrishnan</b>
         <a href="n4-pass-engine.html">N4 Pass Engine</a><br>
@@ -926,11 +935,12 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
       Built for one exam. Progress syncs to your account across devices.<br>
       <span class="jp">頑張ってください。</span> You don't need perfect — you need <b style="color:var(--jade)">a pass</b>.
       <br>
+      <button class="btn sm" id="resetBtn">Reset all progress</button>
       <div data-version-badge aria-live="polite"></div>
     </div>
   </main>
 </div>
-<nav class="btm-nav" aria-label="Quick navigation">
+<nav class="btm-nav dj-bnav" aria-label="Quick navigation">
   <ul>
     <li><a href="#p1" data-go="p1"><i class="bi">文</i>Grammar</a></li>
     <li><a href="#p5" data-go="p5"><i class="bi">語</i>Vocab</a></li>
@@ -4561,12 +4571,19 @@ const PARTS=[
 const partsBox=$("#parts"),navBox=$("#nav");
 let lastOpenedPart=null;
 const partRenders={};
+/* Dojo banner per part: watermark kanji + gradient, picked from the title */
+const PART_LOOK=[[/grammar|q-bank|sentence/i,"文","g-kon"],[/verb/i,"動","g-kikyo"],[/reading/i,"読","g-asagi"],
+  [/listening/i,"聴","g-tokiwa"],[/vocab/i,"語","g-akane"],[/kanji/i,"漢","g-yamabuki"],[/mock|test/i,"試","g-ume"],
+  [/trap|fail/i,"罠","g-akane"],[/schedule|road|day/i,"暦","g-tokiwa"],[/review|srs/i,"復","g-kikyo"],
+  [/cheat|strategy/i,"策","g-asagi"]];
+const partLook=t=>(PART_LOOK.find(([re])=>re.test(t))||[0,"学","g-kon"]);
 PARTS.forEach((p)=>{
   const a=el("a",STATE.parts[p.id]?"done":"");a.href="#"+p.id;a.dataset.go=p.id;
-  a.innerHTML=`<span class="pn">${p.no}</span><span>${p.t}</span><span class="stamp jp">済</span>`;
+  a.innerHTML=`<span class="pn">${p.no.replace("PART ","")}</span><span>${p.t}</span><span class="stamp jp">済</span>`;
   navBox.appendChild(a);
+  const [,wm,grad]=partLook(p.t);
   const sec=el("section","part");sec.id=p.id;
-  sec.innerHTML=`<header><span class="idx jp">${p.no}</span><h2>${p.t}</h2>
+  sec.innerHTML=`<header class="dj-banner ${grad}" data-wm="${wm}"><span class="idx jp">${p.no}</span><h2>${p.t}</h2>
     <span class="meta"><label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Mark this part finished">
       <input type="checkbox" data-part="${p.id}" ${STATE.parts[p.id]?"checked":""} style="accent-color:var(--vermilion);width:16px;height:16px">done</label>
       </span></header>
@@ -4587,6 +4604,7 @@ function showPart(partId){
   sec.classList.add("active");
   $$("[data-go]").forEach(a=>a.classList.toggle("on",a.dataset.go===partId));
   window.scrollTo(0,0);
+  closeMenu();
 }
 
 window.addEventListener("hashchange",()=>{
@@ -4716,10 +4734,10 @@ $("#resetBtn").addEventListener("click",async()=>{
   location.reload();
 });
 
-/* Mobile menu */
-function closeMenu(){$("#side").classList.remove("open");$("#scrim").classList.remove("on");}
-$("#menuBtn").addEventListener("click",()=>{$("#side").classList.toggle("open");$("#scrim").classList.toggle("on");});
-$("#scrim").addEventListener("click",closeMenu);
+/* Mobile menu — the sidebar became the top bar, so only the tab scroll is left */
+function closeMenu(){const on=$("#nav a.on");if(on)on.scrollIntoView({block:"nearest",inline:"center"});}
+$("#menuBtn")?.addEventListener("click",()=>{$("#side").classList.toggle("open");$("#scrim")?.classList.toggle("on");});
+$("#scrim")?.addEventListener("click",closeMenu);
 
 /* Auth guard — redirect to login.html if no valid session */
 (function(){
@@ -4919,10 +4937,12 @@ window.addEventListener("beforeunload", () => {
    ============================================================ */
 (function initTheme(){
   const TKEY = "n3.theme";
-  let light = localStorage.getItem(TKEY) === "light";
+  const stored = localStorage.getItem(TKEY);
+  let light = stored ? stored === "light" : !(window.matchMedia && matchMedia("(prefers-color-scheme:dark)").matches);
 
   function applyTheme(){
     document.body.classList.toggle("light-mode", light);
+    document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
     const icon = light ? "☀️" : "🌙";
     const label = light ? "Dark mode" : "Light mode";
     const si = $("#themeIcon"), sl = $("#themeLabel"), tb = $("#topbarThemeBtn");

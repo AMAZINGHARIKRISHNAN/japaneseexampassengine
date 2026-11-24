@@ -214,8 +214,12 @@ a{color:var(--indigo);text-decoration:none}
 .word-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .word-chip{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:13px;font-family:var(--jp)}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
 </head>
-<body>
+<body class="sp sp-mock">
 
 <!-- Theme init (before paint to avoid flash) -->
 <script>(function(){var t=localStorage.getItem("n3.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
@@ -231,7 +235,7 @@ try{
 
 <!-- Header -->
 <header class="hdr">
-  <span class="hdr-brand jp">N3</span>
+  <span class="dj-mark" aria-hidden="true">模</span><span class="hdr-brand jp">N3</span>
   <span class="hdr-sub">Full Mock Test</span>
   <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:15px;cursor:pointer;transition:all .15s;padding:0;flex-shrink:0">☀️</button>
   <a href="n3-pass-engine.html" class="hdr-back">← Back to App</a>
@@ -242,8 +246,11 @@ try{
 <!-- SCREEN: LANDING -->
 <div class="screen active" id="screenLanding">
   <div class="landing">
+    <section class="dj-banner g-ume" data-wm="試">
+    <div class="dj-jlabel">模擬試験 · N3</div>
     <h1><span class="jp">模擬試験</span> — JLPT N3 Full Mock Test</h1>
     <p class="landing-sub">101 questions · 3 sections · Real JLPT N3 format · Scaled score out of 180</p>
+    </section>
 
     <div class="info-grid">
       <div class="info-box"><div class="ib-val">101</div><div class="ib-lbl">Questions</div></div>

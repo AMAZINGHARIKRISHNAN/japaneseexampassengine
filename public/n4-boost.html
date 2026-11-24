@@ -113,13 +113,17 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:va
 .sum-btn.primary{background:var(--jade-bg);border-color:var(--jade);color:var(--jade)}
 .sum-btn.indigo-btn{background:var(--indigo-bg);border-color:var(--indigo);color:var(--indigo)}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
 </head>
-<body>
+<body class="sp sp4 sp-boost">
 <script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
 <script>(function(){function v(k){try{return JSON.parse(sessionStorage.getItem(k)||"null")?.verified===true;}catch{return false;}}if(!v("n3_user_session")&&!v("n3_admin_verified"))location.replace("login.html");})();</script>
 
 <header>
-  <a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
+  <span class="dj-mark" aria-hidden="true">強</span><a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
   <span style="font-size:14px;color:var(--ink-dim);font-weight:500">Boost Drills</span>
   <div class="hdr-right">
     <a class="hdr-back" href="n4-pass-engine.html">← Pass Engine</a>
@@ -131,7 +135,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:va
 
 <!-- LANDING -->
 <div class="page" id="landingPage">
-  <div class="landing-hero">
+  <div class="landing-hero dj-banner g-yamabuki" data-wm="強">
     <h1>⚡ N4 Boost Drills</h1>
     <p>10-question randomized drills with instant feedback. Pick a category to target your weak spots — modelled on nihonez.com N4 question formats.</p>
   </div>

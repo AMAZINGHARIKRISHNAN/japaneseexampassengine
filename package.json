@@ -1,6 +1,6 @@
 {
   "name": "japanese-jlpt-pass-engine",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "JLPT N3/N4 study web app — Firebase Hosting + Firestore",
   "scripts": {

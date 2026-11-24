@@ -190,8 +190,12 @@ table.hist td .jp{font-family:var(--jp)}
   .page{padding:20px 14px 60px}
 }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
 </head>
-<body>
+<body class="sp sp4 sp-mock">
 <script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
 <script>
 // Auth guard
@@ -205,7 +209,7 @@ table.hist td .jp{font-family:var(--jp)}
 </script>
 
 <header>
-  <a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
+  <span class="dj-mark" aria-hidden="true">模</span><a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
   <span class="hdr-title">Mock Test</span>
   <div class="hdr-right">
     <a class="hdr-back" href="n4-pass-engine.html">← Pass Engine</a>
@@ -218,7 +222,7 @@ table.hist td .jp{font-family:var(--jp)}
 <div class="page">
   <!-- LANDING -->
   <div id="screen-landing">
-    <div class="hero-card">
+    <div class="hero-card dj-banner g-ume" data-wm="試">
       <div class="hero-badge">JLPT N4 形式</div>
       <h1>Full N4 Mock Test<br><span class="jp">模擬試験</span></h1>
       <p>115 questions · 115 minutes · Scaled to 180 points. Pass requires ≥ 90 total and ≥ 19/60 in each section.</p>

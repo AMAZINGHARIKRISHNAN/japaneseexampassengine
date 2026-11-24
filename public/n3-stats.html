@@ -123,8 +123,12 @@ tbody td{padding:11px 16px;color:var(--ink)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid #fff2;border-top-color:var(--indigo);border-radius:50%;animation:spin .7s linear infinite}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
 </head>
-<body>
+<body class="sp sp-stats">
 
 <script>(function(){var t=localStorage.getItem("n3.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
 <script>
@@ -136,7 +140,7 @@ try{
 </script>
 
 <header class="hdr">
-  <span class="hdr-brand jp">N3</span>
+  <span class="dj-mark" aria-hidden="true">績</span><span class="hdr-brand jp">N3</span>
   <span class="hdr-sub">My Stats &amp; Progress</span>
   <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:15px;cursor:pointer;transition:all .15s;padding:0;flex-shrink:0">☀️</button>
   <a href="n3-pass-engine.html" class="hdr-back">← Back to App</a>
@@ -145,8 +149,11 @@ try{
 </header>
 
 <div class="page">
+  <section class="dj-banner g-asagi" data-wm="績">
+  <div class="dj-jlabel">成績 · N3</div>
   <h1><span class="jp">成績</span> — My Progress Dashboard</h1>
   <p class="page-sub">Track your mock test history, section performance, and growth over time.</p>
+  </section>
 
   <!-- KPI row -->
   <div class="kpi-row">

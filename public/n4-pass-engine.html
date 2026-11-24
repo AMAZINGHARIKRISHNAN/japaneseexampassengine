@@ -455,8 +455,13 @@ body.light-mode .focus-box{background:var(--surface)}
 [data-version-badge] .vb-sep{opacity:.5}
 [data-version-badge] .vb-note{flex-basis:100%;text-align:center;font-size:10.5px;opacity:.85}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
+<script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 </head>
-<body>
+<body class="pe pe4">
 <script>(function(){function v(k){try{return JSON.parse(sessionStorage.getItem(k)||"null")?.verified===true;}catch{return false;}}if(!v("n3_user_session")&&!v("n3_admin_verified"))location.replace("login.html");})();</script>
 <div class="credit-watermark" aria-hidden="true">
   <div class="marquee">
@@ -465,14 +470,24 @@ body.light-mode .focus-box{background:var(--surface)}
     <span>Designed and Developed by <b>AMAZING HARIKRISHNAN</b><span class="sep">|</span>All the best folks</span>
   </div>
 </div>
-<div class="topbar">
-  <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
-  <span class="mark">N4 救急</span>
-  <span class="cd">Exam: <b id="cdTop">--d --:--</b></span>
-  <a href="dashboard.html" class="theme-btn" title="Dashboard" style="text-decoration:none">🏠</a>
-  <button class="theme-btn" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle light/dark (T)">☀</button>
-  <button class="menu-btn" id="searchTopBtn" aria-label="Search" title="Search grammar &amp; vocab (Ctrl+K)" style="font-size:16px">🔍</button>
-</div>
+<header class="dj-top" id="side">
+  <div class="dj-top-in">
+    <div class="dj-brand-row">
+      <a class="dj-brand" href="dashboard.html" title="Dashboard">
+        <span class="dj-mark" aria-hidden="true">救</span>
+        <span><span class="dj-name">N4 Pass Engine</span><br><span class="dj-sub">救急 · JLPT N4 grammar, vocab, reading &amp; listening</span></span>
+      </a>
+      <div class="dj-status">
+        <button class="dj-pill" id="searchTopBtn" aria-label="Search" title="Search grammar &amp; vocab (Ctrl+K)">🔍<span class="hide-s"> Search</span></button>
+        <span class="dj-pill" title="Time until your exam">⏳ <b id="cdTop">--d --:--</b></span>
+        <button class="dj-pill" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle light/dark (T)">☀</button>
+        <a class="dj-pill" href="dashboard.html" title="Dashboard">🏠<span class="hide-s"> Dashboard</span></a>
+        <a class="dj-pill" href="n3-pass-engine.html" title="Switch to N3">⇄ N3</a>
+      </div>
+    </div>
+    <nav class="parts dj-tabs" id="nav" aria-label="Course sections"></nav>
+  </div>
+</header>
 <!-- Break banner -->
 <div class="break-banner" id="breakBanner">☕ BREAK TIME — 5 minutes. Stand up, stretch, drink water. Back in <span id="breakCountdown">5:00</span>. You earned it! 頑張ってる！</div>
 
@@ -495,62 +510,71 @@ body.light-mode .focus-box{background:var(--surface)}
   </div>
 </div>
 
-<div class="scrim" id="scrim"></div>
 <div class="shell">
-  <aside class="side" id="side">
-    <div class="brand"><span class="mark">救急</span><span class="sub">N4 Pass Engine</span></div>
-    <div style="display:flex;gap:6px;margin:0 6px 8px">
-      <a href="dashboard.html" class="btn sm" style="flex:1;text-align:center;text-decoration:none">🏠 Dashboard</a>
-      <a href="n3-pass-engine.html" class="btn sm" style="flex:1;text-align:center;text-decoration:none">⇄ N3</a>
-    </div>
-    <div class="pomo-widget" id="pomoWidget">
-      <div class="pomo-mode-lbl" id="pomoMode">🎯 FOCUS SESSION</div>
-      <div class="pomo-time" id="pomoTime">25:00</div>
-      <div class="pomo-bar"><i id="pomoBar" style="width:100%"></i></div>
-      <div class="pomo-btns">
-        <button id="pomoStart">▶ Start</button>
-        <button id="pomoPause">⏸ Pause</button>
-        <button id="pomoReset">↺ Reset</button>
-      </div>
-    </div>
-    <div class="motive-banner" id="motiveBanner">Loading your battle message…</div>
-    <div class="countdown">
-      <div class="lbl" id="cdLabel" style="margin-bottom:6px">until JLPT N4</div>
-      <div class="cd-live">
-        <div class="cd-unit"><span class="cd-n" id="cdDays">-</span><span class="cd-u">days</span></div>
-        <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-n" id="cdHours">-</span><span class="cd-u">hrs</span></div>
-        <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-n" id="cdMins">-</span><span class="cd-u">min</span></div>
-        <span class="cd-sep">:</span>
-        <div class="cd-unit"><span class="cd-n" id="cdSecs">-</span><span class="cd-u">sec</span></div>
-      </div>
-    </div>
-    <nav class="parts" id="nav"></nav>
-    <button class="btn sm" id="launchMockBtn" style="margin:10px 6px 0;width:calc(100% - 12px);background:var(--jade-dim);border-color:var(--jade);color:#dff5e9">⏱ Mock Test (10 min)</button>
-    <button class="btn sm" id="sideSearchBtn" style="margin:6px 6px 0;width:calc(100% - 12px)" aria-label="Search grammar and vocab">🔍 Search (Ctrl+K)</button>
-    <button class="btn sm" id="resetBtn" style="margin:6px 6px 0;width:calc(100% - 12px)">Reset all progress</button>
-  </aside>
-
   <main>
-    <section class="hero">
-      <div class="seal jp">N4</div>
-      <h1>4 days. One job: <span class="jp">合格</span> — pass.</h1>
-      <p>This isn't a textbook. It's a triage system. Everything here is high-yield: the grammar that actually shows up, reading you can finish in one breath, listening patterns the test reuses, and the traps that steal marks. Skip nothing marked <b style="color:var(--vermilion)">trap</b>. Skim everything else.</p>
-      <div class="row">
-        <div class="kpi"><b id="kGrammar">0/28</b>grammar locked</div>
-        <div class="kpi"><b id="kVocab">0%</b>vocab seen</div>
-        <div class="kpi"><b id="kRead">0/20</b>passages</div>
-        <div class="kpi"><b id="kOverall">0%</b>exam-ready</div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">
-        <a href="n4-mock-test.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:600;transition:border-color .15s" onmouseover="this.style.borderColor='var(--jade)'" onmouseout="this.style.borderColor='var(--line)'">📋 <span><strong>Full JLPT N4 Mock Test</strong><br><span style="font-size:11.5px;color:var(--ink-dim);font-weight:400">115 Questions · Exam &amp; Practice Mode</span></span></a>
-        <a href="n4-stats.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:600;transition:border-color .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--line)'">📊 <span><strong>My Stats &amp; Progress</strong><br><span style="font-size:11.5px;color:var(--ink-dim);font-weight:400">Score History · Section Analysis</span></span></a>
-        <a href="n4-boost.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:600;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--line)'">⚡ <span><strong>N4 Boost Drills</strong><br><span style="font-size:11.5px;color:var(--ink-dim);font-weight:400">Targeted Quick Practice by Question Type</span></span></a>
-      </div>
-    </section>
+    <div class="dj-dash">
+      <section class="hero dj-banner g-kon" data-wm="合">
+        <div class="dj-jlabel">合格への道 · N4</div>
+        <h1>4 days. One job: <span class="jp">合格</span> — pass.</h1>
+        <p>This isn't a textbook. It's a triage system. Everything here is high-yield: the grammar that actually shows up, reading you can finish in one breath, listening patterns the test reuses, and the traps that steal marks. Skip nothing marked <b class="trap-word">trap</b>. Skim everything else.</p>
+        <div class="row dj-hstats">
+          <div class="kpi"><b id="kGrammar">0/28</b>grammar locked</div>
+          <div class="kpi"><b id="kVocab">0%</b>vocab seen</div>
+          <div class="kpi"><b id="kRead">0/20</b>passages</div>
+          <div class="kpi"><b id="kOverall">0%</b>exam-ready</div>
+        </div>
+      </section>
+      <aside class="dj-side">
+        <div class="countdown dj-panel" title="Click to choose your exam date">
+          <div class="lbl" id="cdLabel">until JLPT N4</div>
+          <div class="cd-live">
+            <div class="cd-unit"><span class="cd-n" id="cdDays">-</span><span class="cd-u">days</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-unit"><span class="cd-n" id="cdHours">-</span><span class="cd-u">hrs</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-unit"><span class="cd-n" id="cdMins">-</span><span class="cd-u">min</span></div>
+            <span class="cd-sep">:</span>
+            <div class="cd-unit"><span class="cd-n" id="cdSecs">-</span><span class="cd-u">sec</span></div>
+          </div>
+        </div>
+        <div class="pomo-widget dj-panel" id="pomoWidget">
+          <div class="pomo-mode-lbl" id="pomoMode">🎯 FOCUS SESSION</div>
+          <div class="pomo-time" id="pomoTime">25:00</div>
+          <div class="pomo-bar"><i id="pomoBar" style="width:100%"></i></div>
+          <div class="pomo-btns">
+            <button id="pomoStart">▶ Start</button>
+            <button id="pomoPause">⏸ Pause</button>
+            <button id="pomoReset">↺ Reset</button>
+          </div>
+        </div>
+        <div class="motive-banner" id="motiveBanner">Loading your battle message…</div>
+      </aside>
+    </div>
+    <div class="dj-games">
+      <button class="dj-game" id="launchMockBtn">
+        <span class="dj-game-k" aria-hidden="true">試</span>
+        <span><b>⏱ Mock Test (10 min)</b><small>Quick 15-question timed run</small></span>
+      </button>
+      <a class="dj-game" href="n4-mock-test.html">
+        <span class="dj-game-k" aria-hidden="true">模</span>
+        <span><b>Full JLPT N4 Mock Test</b><small>📋 115 Questions · Exam &amp; Practice Mode</small></span>
+      </a>
+      <a class="dj-game" href="n4-boost.html">
+        <span class="dj-game-k" aria-hidden="true">強</span>
+        <span><b>N4 Boost Drills</b><small>⚡ Targeted Quick Practice by Question Type</small></span>
+      </a>
+      <a class="dj-game" href="n4-stats.html">
+        <span class="dj-game-k" aria-hidden="true">績</span>
+        <span><b>My Stats &amp; Progress</b><small>📊 Score History · Section Analysis</small></span>
+      </a>
+      <button class="dj-game" id="sideSearchBtn" aria-label="Search grammar and vocab">
+        <span class="dj-game-k" aria-hidden="true">探</span>
+        <span><b>🔍 Search</b><small>Grammar &amp; vocab (Ctrl+K)</small></span>
+      </button>
+    </div>
     <div id="parts"></div>
     <div class="footer">
+      <button class="btn sm" id="resetBtn">Reset all progress</button><br>
       Built for one exam. Progress syncs to your account across devices.<br>
       <span class="jp">頑張ってください。</span> You don't need perfect — you need <b style="color:var(--jade)">a pass</b>.
       <br>
@@ -584,7 +608,7 @@ body.light-mode .focus-box{background:var(--surface)}
 </div>
 
 <!-- ═══ BOTTOM NAV (mobile) ═══ -->
-<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation">
+<nav class="bottom-nav dj-bnav" id="bottomNav" aria-label="Quick navigation">
   <a href="#p1" class="bn-item" data-go="p1" aria-label="Grammar"><span class="bn-ico">📚</span><span class="bn-lbl">Grammar</span></a>
   <a href="#p5" class="bn-item" data-go="p5" aria-label="Vocabulary"><span class="bn-ico">📝</span><span class="bn-lbl">Vocab</span></a>
   <a href="#p8" class="bn-item" data-go="p8" aria-label="Review flashcards"><span class="bn-ico">🎴</span><span class="bn-lbl">Review</span></a>
@@ -3007,14 +3031,21 @@ const PARTS=[
  {id:"p18",no:"PART 18",t:"Section-by-Section Strategy",render:renderSectionStrategy},
 ];
 const partsBox=$("#parts"),navBox=$("#nav");
+/* Dojo banner per part: watermark kanji + gradient, picked from the title */
+const PART_LOOK=[[/grammar|jumbled|keigo/i,"文","g-kon"],[/verb/i,"動","g-kikyo"],[/reading/i,"読","g-asagi"],
+  [/listening/i,"聴","g-tokiwa"],[/vocab/i,"語","g-akane"],[/kanji/i,"漢","g-yamabuki"],[/mock|nat/i,"試","g-ume"],
+  [/trap|fail/i,"罠","g-akane"],[/schedule|day/i,"暦","g-tokiwa"],[/review/i,"復","g-kikyo"],
+  [/cheat|strategy/i,"策","g-asagi"],[/counter/i,"数","g-yamabuki"]];
+const partLook=t=>(PART_LOOK.find(([re])=>re.test(t))||[0,"学","g-kon"]);
 PARTS.forEach((p,i)=>{
   // nav
   const a=el("a",STATE.parts[p.id]?"done":"");a.href="#"+p.id;a.dataset.go=p.id;
-  a.innerHTML=`<span class="pn">${p.no}</span><span>${p.t}</span><span class="stamp jp">済</span>`;
+  a.innerHTML=`<span class="pn">${p.no.replace("PART ","")}</span><span>${p.t}</span><span class="stamp jp">済</span>`;
   navBox.appendChild(a);
   // section
+  const [,wm,grad]=partLook(p.t);
   const sec=el("section","part"+(i===0?" open":""));sec.id=p.id;
-  sec.innerHTML=`<header><span class="idx jp">${p.no}</span><h2>${p.t}</h2>
+  sec.innerHTML=`<header class="dj-banner ${grad}" data-wm="${wm}"><span class="idx jp">${p.no}</span><h2>${p.t}</h2>
     <span class="meta"><label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Mark this part finished">
       <input type="checkbox" data-part="${p.id}" ${STATE.parts[p.id]?"checked":""} style="accent-color:var(--vermilion);width:16px;height:16px">done</label>
       <span class="chev">▸</span></span></header>
@@ -3166,9 +3197,10 @@ $("#resetBtn").addEventListener("click",async()=>{
 });
 
 /* ---------- mobile menu ---------- */
-function closeMenu(){$("#side").classList.remove("open");$("#scrim").classList.remove("on");}
-$("#menuBtn").addEventListener("click",()=>{$("#side").classList.toggle("open");$("#scrim").classList.toggle("on");});
-$("#scrim").addEventListener("click",closeMenu);
+/* The sidebar became the Dojo top bar; nothing to close, only keep the tab row tidy */
+function closeMenu(){}
+$("#menuBtn")?.addEventListener("click",()=>{$("#side").classList.toggle("open");$("#scrim")?.classList.toggle("on");});
+$("#scrim")?.addEventListener("click",closeMenu);
 
 
 /* ============================================================
@@ -3604,11 +3636,12 @@ document.addEventListener('keydown',function(e){
   const bnIco=document.getElementById('bnThemeIco');
   function setTheme(light){
     body.classList.toggle('light-mode',light);
+    document.documentElement.setAttribute('data-theme',light?'light':'dark');
     const ico=light?'🌙':'☀';
     if(themeBtn)themeBtn.textContent=ico;
     if(bnIco)bnIco.textContent=ico;
   }
-  if(stored==='light')setTheme(true);
+  setTheme(stored?stored==='light':!(window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches));
   themeBtn&&themeBtn.addEventListener('click',()=>{
     const nowLight=body.classList.contains('light-mode');
     setTheme(!nowLight);

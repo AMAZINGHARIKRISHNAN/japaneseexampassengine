@@ -140,13 +140,17 @@ table.htbl td{padding:9px 12px;border-top:1px solid var(--line);color:var(--ink)
 .footer-link.gold-link{border-color:var(--gold-dim);background:var(--gold-bg)}
 .footer-link.gold-link .fl-title{color:var(--gold)}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dojo-theme.css">
 </head>
-<body>
+<body class="sp sp4 sp-stats">
 <script>(function(){var t=localStorage.getItem("n4.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("light-mode",t==="light");})();</script>
 <script>(function(){function v(k){try{return JSON.parse(sessionStorage.getItem(k)||"null")?.verified===true;}catch{return false;}}if(!v("n3_user_session")&&!v("n3_admin_verified"))location.replace("login.html");})();</script>
 
 <header>
-  <a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
+  <span class="dj-mark" aria-hidden="true">績</span><a class="hdr-brand jp" href="n4-pass-engine.html">N4</a>
   <span style="font-size:14px;color:var(--ink-dim);font-weight:500">Stats & Progress</span>
   <div class="hdr-right">
     <a class="hdr-back" href="n4-pass-engine.html">← Pass Engine</a>

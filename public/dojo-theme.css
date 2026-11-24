@@ -298,6 +298,8 @@ body.pe .cd-unit{flex:1;background:var(--ai-soft);border-radius:10px;padding:8px
 body.pe .cd-n{font-family:var(--mincho);font-weight:800;font-size:30px;color:var(--ai);min-width:0}
 body.pe .cd-u{color:var(--muted);font-size:10px;letter-spacing:.06em}
 body.pe .cd-sep{display:none}
+body.pe .cd-edit{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--ai);text-decoration:underline;text-underline-offset:3px}
+body.pe .countdown:hover .cd-edit{text-decoration-thickness:2px}
 body.pe .promo-banner{margin:0;background:var(--surface) !important;border:1px solid var(--line) !important;border-left:4px solid var(--matcha) !important;
   border-radius:14px;padding:14px 16px;font-size:13.5px;color:var(--muted)}
 body.pe .promo-banner b{color:var(--matcha)}
@@ -742,6 +744,10 @@ body.pg-login #status{border-radius:12px}
 body.pg-login #status.info{background:var(--ai-soft);color:var(--ink);border-color:transparent}
 body.pg-login #status.warn{border-color:var(--amber)}
 body.pg-login #status.error{color:var(--ume)}
+body.pg-login .keep-row{display:flex;align-items:flex-start;gap:10px;margin:16px 0 0;padding:10px 12px;border-radius:12px;background:var(--paper);
+  border:1px solid var(--line);cursor:pointer;text-transform:none;letter-spacing:0;font-size:14px;font-weight:600;color:var(--ink)}
+body.pg-login .keep-row input{width:18px;height:18px;flex:none;margin:2px 0 0;padding:0;box-shadow:none}
+body.pg-login .keep-row small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:1px}
 body.pg-login .foot,body.pg-login .link-btn{color:var(--muted)}
 body.pg-login .link-btn:hover{color:var(--ai)}
 

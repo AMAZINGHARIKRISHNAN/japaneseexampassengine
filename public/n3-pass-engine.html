@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="session-keep.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>N3 救急 — 30-Day Pass Engine</title>
 <style>
@@ -832,7 +833,7 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
           aria-label="Search content" aria-expanded="false" aria-controls="searchDrop" aria-autocomplete="list">
       </div>
       <div class="dj-status">
-        <span class="dj-pill" title="Time until your exam">⏳ <b id="cdTop">--d --:--</b></span>
+        <button class="dj-pill" type="button" data-exam-picker title="Time until your exam — click to change it">⏳ <b id="cdTop">--d --:--</b></button>
         <span class="dj-pill" title="Active study time today">⏱ <b id="sideActiveTime">0 min</b></span>
         <button class="dj-pill" id="topbarThemeBtn" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">🌙</button>
         <a class="dj-pill" href="dashboard.html" title="Dashboard">🏠<span class="hide-s"> Dashboard</span></a>
@@ -900,6 +901,7 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
             <span class="cd-sep">:</span>
             <div class="cd-unit"><span class="cd-n" id="cdSecs">-</span><span class="cd-u">sec</span></div>
           </div>
+          <span class="cd-edit">✎ Set my exam deadline</span>
         </div>
         <div class="promo-banner dj-panel">
           <b>Just passed N4?</b> Harikrishnan's N4 system helped many clear it: <a href="n4-pass-engine.html">N4 Pass Engine →</a> Same builder, same engine — recalibrated for N3.
@@ -4755,18 +4757,28 @@ function paintExamLabel(){
   if(!lbl)return;
   const own=storedExamDate();
   const custom=own&&endOfDay(own)-new Date()>0;
-  lbl.textContent=(custom?"until your exam · ":"until JLPT N3 · ")+
-    EXAM_DATE.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+  /* The student can name their own deadline ("School mock exam"); an
+     official sitting picked from the list is stored as "JLPT N3". */
+  const name=custom&&localStorage.getItem(EXAM_KEY+".label");
+  const when=EXAM_DATE.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+
+    (custom&&!name?.startsWith("JLPT")?", "+EXAM_DATE.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"");
+  lbl.textContent="until "+(name||(custom?"your exam":"JLPT N3"))+" · "+when;
 }
 
 /* Called by progress-sync.js (remote date) and by the exam-date picker. */
-window.__applyExamDate=function(iso){
+/* iso: a date to count down to, "" to go back to the next official sitting,
+   undefined to leave it. label: the deadline's name, "" to clear, undefined to leave. */
+window.__applyExamDate=function(iso,label){
   if(iso)localStorage.setItem(EXAM_KEY,iso);
+  else if(iso==="")localStorage.removeItem(EXAM_KEY);
+  if(label)localStorage.setItem(EXAM_KEY+".label",label);
+  else if(label==="")localStorage.removeItem(EXAM_KEY+".label");
   EXAM_DATE=resolveExamDate();
   updateCountdown();
   paintExamLabel();
 };
 window.__getExamDateISO=function(){return localStorage.getItem(EXAM_KEY)||"";};
+window.__getExamLabel=function(){return localStorage.getItem(EXAM_KEY+".label")||"";};
 
 function updateCountdown(){
   const now=new Date();

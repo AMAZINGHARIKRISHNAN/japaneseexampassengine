@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+<script src="session-keep.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Admin Dashboard — N3 · N4</title>
   <style>
@@ -822,10 +823,13 @@ const meReady = (() => {
   let resolveMe;
   const p = new Promise(r => { resolveMe = r; });
   onAuthStateChanged(auth, async user => {
-    if (!user) { window.location.replace("login.html"); return; }
+    // No Firebase session (or not an admin): forget the kept flag first, or
+    // login.html would see it and bounce straight back here.
+    if (!user) { window.__forgetSession?.(); window.location.replace("login.html"); return; }
     try {
       const snap = await getDoc(doc(db, "admins", user.uid));
       if (!snap.exists()) {
+        window.__forgetSession?.();
         await signOut(auth);
         window.location.replace("login.html");
         return;
@@ -947,6 +951,7 @@ pwForm.addEventListener("submit", async e => {
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   sessionStorage.removeItem("n3_admin_verified");
+  window.__forgetSession?.();          // also drops "Keep me signed in"
   try { await signOut(auth); } catch { /* ignore */ }
   window.location.replace("login.html");
 });
@@ -1722,7 +1727,8 @@ function progressRows() {
       u, sum, done,
       overall:   typeof sum?.overall === "number" ? sum.overall : null,
       updatedAt: p?.updatedAt ?? null,
-      exam:      p?.examDates?.[progCourse] ?? null,
+      exam:      p?.examDates?.[progCourse] || null,
+      examLabel: p?.examLabels?.[progCourse] || "",
       started:   !!sum || done > 0,
     };
   });
@@ -1815,7 +1821,7 @@ function renderProgress() {
         <div class="prog-foot">
           <span>${r.updatedAt ? "Synced " + esc(relTime(r.updatedAt)) : "Never synced"}</span>
           <span>${r.exam
-            ? `Exam ${esc(examFmt(r.exam))}${days !== null && days >= 0 ? ` · ${esc(days)}d left` : ""}`
+            ? `${r.examLabel && !r.examLabel.startsWith("JLPT") ? esc(r.examLabel) : "Exam"} ${esc(examFmt(r.exam))}${days !== null && days >= 0 ? ` · ${esc(days)}d left` : ""}`
             : "No exam date set"}</span>
         </div>
       </div>`;

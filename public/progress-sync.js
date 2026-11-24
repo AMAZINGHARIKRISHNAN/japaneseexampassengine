@@ -76,44 +76,65 @@ const toISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0
 function buildPicker() {
   if (document.getElementById("examPickerOverlay")) return;
 
+  // Styled from the page's own theme variables (dojo-theme.css), so it
+  // follows light/dark like everything else; fallbacks keep it legible alone.
   const style = document.createElement("style");
   style.textContent = `
-    #examPickerOverlay{position:fixed;inset:0;background:#000000b0;backdrop-filter:blur(3px);
+    #examPickerOverlay{position:fixed;inset:0;background:rgba(10,15,25,.55);backdrop-filter:blur(4px);
       display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
     #examPickerOverlay.open{display:flex}
-    #examPickerCard{width:min(420px,100%);background:#1b1d28;border:1px solid #2e3242;border-radius:14px;
-      padding:24px;color:#ece8df;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-      box-shadow:0 24px 60px #00000066}
-    #examPickerCard h3{font-size:16px;margin:0 0 4px}
-    #examPickerCard .sub{font-size:12px;color:#6f7283;margin-bottom:16px}
-    .exam-opt{display:block;width:100%;text-align:left;padding:11px 13px;margin-bottom:8px;border-radius:9px;
-      background:#0d0e14;border:1px solid #2e3242;color:#ece8df;font-size:13.5px;font-weight:600;cursor:pointer;
-      font-family:inherit;transition:border-color .15s,background .15s}
-    .exam-opt:hover{border-color:#7c8cf0;background:#161926}
-    .exam-opt small{display:block;font-weight:500;color:#6f7283;font-size:11px;margin-top:2px}
-    #examCustomRow{display:flex;gap:8px;margin-top:14px}
-    #examCustomDate{flex:1;background:#0d0e14;border:1px solid #2e3242;border-radius:8px;color:#ece8df;
-      padding:9px 11px;font-size:13px;font-family:inherit;color-scheme:dark}
-    #examPickerCard .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
-    #examPickerCard button.ghost{background:none;border:1px solid #2e3242;color:#a6a8b6;border-radius:8px;
-      padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit}
-    #examSaveCustom{background:#7c8cf0;border:none;color:#fff;border-radius:8px;padding:9px 14px;
-      font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+    #examPickerCard{width:min(460px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:var(--surface,#fffcfa);
+      border:1px solid var(--line,#e3d3d2);border-top:5px solid var(--ai,#6a3d9e);border-radius:16px;padding:22px 22px 18px;
+      color:var(--ink,#2a2230);font-family:var(--gothic,system-ui,sans-serif);box-shadow:var(--shadow-h,0 12px 28px rgba(0,0,0,.2))}
+    #examPickerCard h3{font-size:19px;margin:0 0 2px;color:var(--ink,#2a2230)}
+    #examPickerCard .sub{font-size:13px;color:var(--muted,#665c70);margin-bottom:16px}
+    #examPickerCard .sec{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--ai,#6a3d9e);margin:16px 0 8px}
+    #examPickerCard .now{background:var(--ai-soft,#ece1f6);border-radius:10px;padding:9px 12px;font-size:13.5px;margin-bottom:4px}
+    .exam-opt{display:block;width:100%;text-align:left;padding:10px 13px;margin-bottom:6px;border-radius:10px;
+      background:var(--surface,#fffcfa);border:1px solid var(--line,#e3d3d2);color:var(--ink,#2a2230);font-size:14px;font-weight:700;
+      cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s}
+    .exam-opt:hover{border-color:var(--ai,#6a3d9e);background:var(--ai-soft,#ece1f6)}
+    .exam-opt small{display:block;font-weight:400;color:var(--muted,#665c70);font-size:12px;margin-top:1px}
+    #examCustom{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    #examCustom label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted,#665c70)}
+    #examCustom label.wide{grid-column:1/-1}
+    #examCustom input{background:var(--paper,#f7efee);border:1px solid var(--line,#e3d3d2);border-radius:10px;color:var(--ink,#2a2230);
+      padding:9px 11px;font-size:15px;font-family:inherit;font-weight:400;min-width:0}
+    #examCustom input:focus{outline:none;border-color:var(--ai,#6a3d9e);box-shadow:0 0 0 3px color-mix(in srgb,var(--ai,#6a3d9e) 20%,transparent)}
+    #examErr{min-height:18px;font-size:12.5px;color:var(--ume,#9e3557);margin-top:6px}
+    #examPickerCard .acts{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+    #examPickerCard .acts div{display:flex;gap:8px;margin-left:auto}
+    #examPickerCard button.ghost{background:var(--surface,#fffcfa);border:1px solid var(--line,#e3d3d2);color:var(--ink,#2a2230);border-radius:10px;
+      padding:9px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+    #examPickerCard button.link{background:none;border:0;color:var(--ai,#6a3d9e);text-decoration:underline;font-size:13px;cursor:pointer;padding:4px 0;font-family:inherit}
+    #examPickerCard button.link[hidden]{display:none}
+    #examSaveCustom{background:var(--ai,#6a3d9e);border:1px solid var(--ai,#6a3d9e);color:var(--paper,#fff);border-radius:10px;padding:9px 16px;
+      font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
   `;
   document.head.appendChild(style);
 
+  const level = COURSE.toUpperCase();
   const overlay = document.createElement("div");
   overlay.id = "examPickerOverlay";
   overlay.innerHTML = `
     <div id="examPickerCard" role="dialog" aria-modal="true" aria-labelledby="examPickerTitle">
-      <h3 id="examPickerTitle">When is your exam?</h3>
-      <div class="sub">Your countdown and study pacing follow this date.</div>
-      <div id="examOpts"></div>
-      <div id="examCustomRow">
-        <input id="examCustomDate" type="date" aria-label="Custom exam date">
-        <button id="examSaveCustom" type="button">Set</button>
+      <h3 id="examPickerTitle">Set your exam deadline</h3>
+      <div class="sub">Your countdown follows this date, on every device you sign in on.</div>
+      <div class="now" id="examNow"></div>
+      <div class="sec">My own deadline</div>
+      <div id="examCustom">
+        <label>Date<input id="examCustomDate" type="date"></label>
+        <label>Time<input id="examCustomTime" type="time" value="09:00"></label>
+        <label class="wide">Name it (optional)<input id="examCustomName" type="text" maxlength="40" placeholder="e.g. School mock exam, My ${level} goal"></label>
       </div>
-      <div class="acts"><button class="ghost" id="examCancel" type="button">Cancel</button></div>
+      <div id="examErr" role="alert"></div>
+      <div class="sec">Or an official JLPT ${level} sitting</div>
+      <div id="examOpts"></div>
+      <div class="acts">
+        <button class="link" id="examReset" type="button">Use the next official date</button>
+        <div><button class="ghost" id="examCancel" type="button">Cancel</button>
+        <button id="examSaveCustom" type="button">Save my deadline</button></div>
+      </div>
     </div>`;
   document.body.appendChild(overlay);
 
@@ -123,47 +144,75 @@ function buildPicker() {
     b.type = "button";
     b.className = "exam-opt";
     b.innerHTML = `${fmt(d)}<small>Official JLPT sitting</small>`;
-    b.addEventListener("click", () => commit(toISO(d)));
+    b.addEventListener("click", () => commit(toISO(d), `JLPT ${level}`));
     opts.appendChild(b);
   }
 
-  const custom = overlay.querySelector("#examCustomDate");
-  custom.min = new Date().toISOString().slice(0, 10);
+  const date = overlay.querySelector("#examCustomDate");
+  const time = overlay.querySelector("#examCustomTime");
+  const name = overlay.querySelector("#examCustomName");
+  const err  = overlay.querySelector("#examErr");
   overlay.querySelector("#examSaveCustom").addEventListener("click", () => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(custom.value)) return;
-    commit(`${custom.value}T09:00:00`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date.value)) { err.textContent = "Pick a date first."; date.focus(); return; }
+    const t = /^\d{2}:\d{2}$/.test(time.value) ? time.value : "09:00";
+    const iso = `${date.value}T${t}:00`;
+    if (new Date(iso) - new Date() <= 0) { err.textContent = "That time has already passed. Pick one in the future."; return; }
+    commit(iso, name.value.trim().slice(0, 40));
   });
+  overlay.querySelector("#examReset").addEventListener("click", () => commit("", ""));
 
   const close = () => overlay.classList.remove("open");
   overlay.querySelector("#examCancel").addEventListener("click", close);
   overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 
-  function commit(iso) {
-    window.__applyExamDate?.(iso);
-    window.__pushExamDate?.(iso);
+  function commit(iso, label) {
+    window.__applyExamDate?.(iso, label);
+    window.__pushExamDate?.(iso, label);
     close();
   }
 }
 
 function openPicker() {
   buildPicker();
-  document.getElementById("examPickerOverlay")?.classList.add("open");
+  const overlay = document.getElementById("examPickerOverlay");
+  if (!overlay) return;
+  // Prefill with what is set now, so editing a deadline is one change.
+  const iso   = window.__getExamDateISO?.() || "";
+  const label = window.__getExamLabel?.() || "";
+  const own   = iso && !label.startsWith("JLPT");
+  const d     = iso ? new Date(iso) : null;
+  const ok    = own && d && !isNaN(d);
+  const pad   = n => String(n).padStart(2, "0");
+  const date  = overlay.querySelector("#examCustomDate");
+  const t0    = new Date();
+  date.min = `${t0.getFullYear()}-${pad(t0.getMonth() + 1)}-${pad(t0.getDate())}`;
+  date.value = ok ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` : "";
+  overlay.querySelector("#examCustomTime").value = ok ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : "09:00";
+  overlay.querySelector("#examCustomName").value = own ? label : "";
+  overlay.querySelector("#examErr").textContent = "";
+  overlay.querySelector("#examNow").textContent =
+    "Now counting down to: " + (document.getElementById("cdLabel")?.textContent.replace(/^until /, "") || "the next JLPT sitting");
+  overlay.querySelector("#examReset").hidden = !iso;
+  overlay.classList.add("open");
+  (ok ? overlay.querySelector("#examSaveCustom") : date).focus();
 }
 window.__openExamPicker = openPicker;
 
-// The countdown block is the affordance — clicking it sets the date.
+// The countdown card, and anything marked [data-exam-picker], open the picker.
 function wireCountdown() {
-  const block = document.querySelector(".countdown");
-  if (!block) return;
-  block.style.cursor = "pointer";
-  block.title = "Click to set your exam date";
-  block.setAttribute("role", "button");
-  block.setAttribute("tabindex", "0");
-  block.addEventListener("click", openPicker);
-  block.addEventListener("keydown", e => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPicker(); }
-  });
+  for (const block of document.querySelectorAll(".countdown, [data-exam-picker]")) {
+    block.style.cursor = "pointer";
+    block.title = "Set your exam deadline";
+    if (block.tagName !== "BUTTON") {
+      block.setAttribute("role", "button");
+      block.setAttribute("tabindex", "0");
+      block.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPicker(); }
+      });
+    }
+    block.addEventListener("click", openPicker);
+  }
 }
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", wireCountdown);
@@ -220,12 +269,15 @@ function schedulePush() {
 
 window.__pushProgress = schedulePush;
 
-window.__pushExamDate = async (iso) => {
+window.__pushExamDate = async (iso, label = "") => {
   if (!activeUsername) return;
   try {
+    // iso "" means "back to the official date"; it is written (not skipped)
+    // so the student's other devices drop their custom deadline too.
     await setDoc(doc(db, "progress", activeUsername), {
       username:   activeUsername,
-      examDates:  { [COURSE]: iso },
+      examDates:  { [COURSE]: iso ?? "" },
+      examLabels: { [COURSE]: label ?? "" },
       updatedAt:  serverTimestamp(),
     }, { merge: true });
   } catch (e) { console.warn("[sync] exam date push failed", e); }
@@ -256,6 +308,9 @@ let pulled = false;
 
 onAuthStateChanged(auth, async (user) => {
   const username = currentUsername();
+  // A kept "signed in" flag (session-keep.js) but no Firebase session: the
+  // page would show but nothing could load or save, so sign in again.
+  if (!user && username) { window.__forgetSession?.(); location.replace("login.html"); return; }
   // Admins previewing the app have no student profile — nothing to sync.
   if (!user || !username) return;
   activeUsername = username;
@@ -274,10 +329,14 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!remote) { schedulePush(); return; }   // first device: seed the doc
 
-  // Exam date: remote wins if the student has never set one here.
-  const remoteExam = remote.examDates?.[COURSE];
-  if (remoteExam && window.__getExamDateISO?.() !== remoteExam) {
-    window.__applyExamDate?.(remoteExam);
+  // Exam deadline: the copy on the account wins, so a deadline set (or
+  // cleared, as "") on one device follows the student to the others.
+  const remoteExam  = remote.examDates?.[COURSE];
+  const remoteLabel = remote.examLabels?.[COURSE];
+  if (remoteExam !== undefined &&
+      (remoteExam !== (window.__getExamDateISO?.() || "") ||
+       (remoteLabel ?? "") !== (window.__getExamLabel?.() || ""))) {
+    window.__applyExamDate?.(remoteExam, remoteLabel ?? "");
   }
 
   const local = readLocal();

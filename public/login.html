@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+<script src="session-keep.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sign In — 日本語</title>
   <style>
@@ -347,6 +348,11 @@
     <button type="submit" class="btn" id="adminBtn">Sign In</button>
   </form>
 
+  <label class="keep-row" for="keepSignedIn">
+    <input type="checkbox" id="keepSignedIn" checked>
+    <span>Keep me signed in on this device<small>Untick on a shared or public computer</small></span>
+  </label>
+
   <div id="status" role="alert" aria-live="polite"></div>
 
   <div class="foot">
@@ -405,6 +411,9 @@ try {
 const todayISO = new Date().toISOString().slice(0, 10);
 document.getElementById("loginDob").max = todayISO;
 document.getElementById("regDob").max   = todayISO;
+
+// "Keep me signed in" (ticked by default): see session-keep.js
+const keepSignedIn = () => document.getElementById("keepSignedIn")?.checked !== false;
 
 // ─── View switching ──────────────────────────────────────────────────────────
 let currentView = "login";
@@ -571,6 +580,7 @@ document.getElementById("adminForm").addEventListener("submit", async e => {
 
     await logAttempt("admin", "Administrator", "super_admin", "granted");
     sessionStorage.setItem("n3_admin_verified", JSON.stringify({ verified: true, ts: Date.now() }));
+      window.__keepSession?.("n3_admin_verified", keepSignedIn());
     setStatus("ok", "✓ Welcome, Admin! Redirecting to Dashboard…");
     setTimeout(() => window.location.replace("admin.html"), 700);
   } catch (err) {
@@ -638,6 +648,7 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
     if ((await getDoc(doc(db, "admins", cred.user.uid))).exists()) {
       await logAttempt(username, userSnap.data().fullName ?? fullName, "super_admin", "granted");
       sessionStorage.setItem("n3_admin_verified", JSON.stringify({ verified: true, ts: Date.now() }));
+      window.__keepSession?.("n3_admin_verified", keepSignedIn());
       setStatus("ok", "✓ Welcome back, Admin! Redirecting…");
       setTimeout(() => window.location.replace("admin.html"), 700);
       return;
@@ -649,6 +660,7 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
 
     sessionStorage.setItem("n3_user_session",
       JSON.stringify({ verified: true, username, fullName: displayName, ts: Date.now() }));
+    window.__keepSession?.("n3_user_session", keepSignedIn());
     setStatus("ok", `✓ Welcome back, ${displayName}! Redirecting…`);
     setTimeout(() => window.location.replace("dashboard.html"), 700);
   } catch (err) {
@@ -713,6 +725,7 @@ document.getElementById("registerForm").addEventListener("submit", async e => {
 
     sessionStorage.setItem("n3_user_session",
       JSON.stringify({ verified: true, username, fullName, ts: Date.now() }));
+    window.__keepSession?.("n3_user_session", keepSignedIn());
     document.getElementById("registerForm").reset();
     setStatus("ok", `✓ Welcome, ${fullName}! Taking you to your dashboard…`);
     setTimeout(() => window.location.replace("dashboard.html"), 900);

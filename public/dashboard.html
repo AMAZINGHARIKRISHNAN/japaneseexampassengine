@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+<script src="session-keep.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Dashboard — 日本語 Pass Engine</title>
   <style>
@@ -189,6 +190,7 @@ document.getElementById("welcomeMsg").textContent = displayName ? `Welcome back,
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   sessionStorage.removeItem("n3_user_session");
+  window.__forgetSession?.();          // also drops "Keep me signed in"
   try { await signOut(auth); } catch { /* ignore */ }
   window.location.replace("login.html");
 });
@@ -294,7 +296,9 @@ for (const courseKey of allCourseKeys) {
 // Waits for the Firebase Auth session; without it the rules deny the reads.
 if (session?.username) {
   authReady.then(user => {
-    if (!user) return;
+    // A kept "signed in" flag but no Firebase session (signed out elsewhere,
+    // site data partly cleared): nothing would load, so send them to sign in.
+    if (!user) { window.__forgetSession?.(); window.location.replace("login.html"); return; }
     for (const courseKey of allCourseKeys) {
       COURSES[courseKey].latestScore(session.username)
       .then(result => {

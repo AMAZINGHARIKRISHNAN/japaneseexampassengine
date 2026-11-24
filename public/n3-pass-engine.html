@@ -919,6 +919,10 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
         <span class="dj-game-k" aria-hidden="true">績</span>
         <span><b>My Stats &amp; Progress</b><small>📊 Score History · Section Analysis</small></span>
       </a>
+      <a class="dj-game" href="#dojo">
+        <span class="dj-game-k" aria-hidden="true">練</span>
+        <span><b>N3 Dojo</b><small>🥋 649 kanji · 3,552 words · 150 grammar · daily review</small></span>
+      </a>
     </div>
     <div id="parts"></div>
     <div class="footer">
@@ -4566,7 +4570,52 @@ const PARTS=[
  {id:"p19",no:"PART 19",t:"Weekly Mini Tests",render:renderWeeklyMocks},
  {id:"p20",no:"PART 20",t:"N3 Vocabulary (1,835)",render:renderVocabModule},
  {id:"p21",no:"PART 21",t:"Road to Exam Day",render:renderRoadmap},
+ /* N3 Dojo — mounted from dojo/dojo-app.js; `dojo` is the view each part opens */
+ {id:"p22",no:"PART 22",t:"Dojo · Today & Review",dojo:"dojo",render:renderDojo},
+ {id:"p23",no:"PART 23",t:"Dojo · Kanji (649)",dojo:"kanji",render:renderDojo},
+ {id:"p24",no:"PART 24",t:"Dojo · Vocabulary (3,552)",dojo:"vocab",render:renderDojo},
+ {id:"p25",no:"PART 25",t:"Dojo · Grammar (150)",dojo:"grammar",render:renderDojo},
+ {id:"p26",no:"PART 26",t:"Dojo · Practice & Exam",dojo:"practice",render:renderDojo},
 ];
+
+/* ============================================================
+   N3 DOJO  (parts 22–26)
+   Dojo is a full app with its own hash routes (#kanji, #quiz, …). It runs
+   in a shadow root so its styles and the engine's cannot collide, and is
+   loaded only when a Dojo part is first opened.
+   ============================================================ */
+function renderDojo(){return el("div","dojo-slot");}
+/* Which part shows each Dojo view */
+const DOJO_PART={dojo:"p22",home:"p22",review:"p22",path:"p22",lesson:"p22",
+  kanji:"p23",parts:"p23",vocab:"p24",grammar:"p25",
+  practice:"p26",quiz:"p26",match:"p26",write:"p26",build:"p26",sentences:"p26",exam:"p26",notebook:"p26",work:"p26",roleplay:"p26"};
+window.__dojoActive=false;
+let dojoLoading=null;
+function loadDojo(){
+  if(window.N3Dojo)return Promise.resolve();
+  if(!dojoLoading)dojoLoading=new Promise((res,rej)=>{
+    const s=document.createElement("script");s.src="dojo/dojo-app.js";
+    s.onload=res;s.onerror=()=>{dojoLoading=null;rej(new Error("Dojo failed to load"));};
+    document.head.appendChild(s);
+  });
+  return dojoLoading;
+}
+function showDojo(sec,reroute){
+  const slot=$(".dojo-slot",sec);
+  let host=$("#dojoHost");
+  if(!host){host=el("div");host.id="dojoHost";}
+  if(host.parentNode!==slot)slot.appendChild(host);
+  if(!window.N3Dojo&&!$(".dojo-loading",slot))slot.prepend(el("p","dojo-loading lead","Loading the N3 Dojo…"));
+  loadDojo().then(()=>{
+    $(".dojo-loading",slot)?.remove();
+    const wasMounted=!!host.shadowRoot;
+    const app=window.N3Dojo.mount(host,()=>window.__dojoActive);
+    if(wasMounted&&reroute)app.route();
+  }).catch(()=>{
+    const m=$(".dojo-loading",slot);
+    if(m)m.textContent="The N3 Dojo couldn't load. Check your connection and reload the page.";
+  });
+}
 
 const partsBox=$("#parts"),navBox=$("#nav");
 let lastOpenedPart=null;
@@ -4578,11 +4627,11 @@ const PART_LOOK=[[/grammar|q-bank|sentence/i,"文","g-kon"],[/verb/i,"動","g-ki
   [/cheat|strategy/i,"策","g-asagi"]];
 const partLook=t=>(PART_LOOK.find(([re])=>re.test(t))||[0,"学","g-kon"]);
 PARTS.forEach((p)=>{
-  const a=el("a",STATE.parts[p.id]?"done":"");a.href="#"+p.id;a.dataset.go=p.id;
+  const a=el("a",STATE.parts[p.id]?"done":"");a.href="#"+(p.dojo||p.id);a.dataset.go=p.id;
   a.innerHTML=`<span class="pn">${p.no.replace("PART ","")}</span><span>${p.t}</span><span class="stamp jp">済</span>`;
   navBox.appendChild(a);
   const [,wm,grad]=partLook(p.t);
-  const sec=el("section","part");sec.id=p.id;
+  const sec=el("section","part"+(p.dojo?" dojo-part":""));sec.id=p.id;
   sec.innerHTML=`<header class="dj-banner ${grad}" data-wm="${wm}"><span class="idx jp">${p.no}</span><h2>${p.t}</h2>
     <span class="meta"><label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Mark this part finished">
       <input type="checkbox" data-part="${p.id}" ${STATE.parts[p.id]?"checked":""} style="accent-color:var(--vermilion);width:16px;height:16px">done</label>
@@ -4594,8 +4643,9 @@ PARTS.forEach((p)=>{
 });
 
 function showPart(partId){
-  const valid=PARTS.find(p=>p.id===partId);
-  if(!valid)partId=PARTS[0].id;
+  /* A hash is either an engine part (#p5) or a Dojo view (#kanji, #quiz …) */
+  if(!PARTS.find(p=>p.id===partId))partId=DOJO_PART[partId]||PARTS[0].id;
+  const part=PARTS.find(p=>p.id===partId);
   $$(".part.active").forEach(s=>s.classList.remove("active"));
   const sec=$("#"+partId);
   if(!sec)return;
@@ -4603,6 +4653,15 @@ function showPart(partId){
   lastOpenedPart=sec;
   sec.classList.add("active");
   $$("[data-go]").forEach(a=>a.classList.toggle("on",a.dataset.go===partId));
+  window.__dojoActive=!!part.dojo;
+  document.body.classList.toggle("dojo-on",!!part.dojo);
+  if(part.dojo){
+    /* #p22-style links: point the hash at the part's Dojo view so Dojo can route */
+    const h=window.location.hash.slice(1);
+    const reroute=!DOJO_PART[h];
+    if(reroute)history.replaceState(null,"","#"+part.dojo);
+    showDojo(sec,reroute);
+  }
   window.scrollTo(0,0);
   closeMenu();
 }
@@ -5034,7 +5093,7 @@ window.addEventListener("beforeunload", () => {
   document.addEventListener("click", e => { if(!box.contains(e.target)&&!drop.contains(e.target)) close(); });
   document.addEventListener("keydown", e => {
     if((e.ctrlKey||e.metaKey)&&e.key==="k"){ e.preventDefault(); box.focus(); }
-    if(e.key==="/"&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA"){ e.preventDefault(); box.focus(); }
+    if(e.key==="/"&&!window.__dojoActive&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA"){ e.preventDefault(); box.focus(); }
   });
   window.addEventListener("resize", ()=>{ if(drop.classList.contains("open")) posDrop(); });
 })();
@@ -5470,6 +5529,7 @@ window.addEventListener("hashchange",()=>syncBtmNav(window.location.hash.slice(1
 // Flashcard: Left/Right arrows + Space to flip
 document.addEventListener("keydown",e=>{
   if(document.activeElement.tagName==="INPUT"||document.activeElement.tagName==="TEXTAREA") return;
+  if(window.__dojoActive) return;   /* Dojo has its own flashcard keys */
   const flash=$("#flash");
   if(flash){
     if(e.key==="ArrowRight"){e.preventDefault();$("#fcNext")?.click();}

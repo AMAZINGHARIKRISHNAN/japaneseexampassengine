@@ -144,6 +144,22 @@ service cloud.firestore {
       allow read, write: if isAdmin() || (isUser(username) && userActive(username));
     }
 
+    // N3 Dojo state (parts 22–26 of the N3 engine). Dojo keeps four documents —
+    // progress, srs, marks, stories — each stored as one JSON string, because
+    // its state holds shapes Firestore cannot (nested arrays). Same ownership
+    // and suspension rules as progress/, with the part names and payload
+    // pinned so the path cannot be used as general-purpose storage.
+    match /dojo/{username}/docs/{part} {
+      allow read: if isAdmin() || (isUser(username) && userActive(username));
+      allow delete: if isAdmin();
+      allow create, update: if (isAdmin() || (isUser(username) && userActive(username)))
+        && part in ['progress', 'srs', 'marks', 'stories']
+        && request.resource.data.keys().hasOnly(['json', 'upd', 'updatedAt'])
+        && request.resource.data.json is string
+        && request.resource.data.json.size() < 900000
+        && request.resource.data.upd is number;
+    }
+
     // Retired collections. Everything below is closed rather than deleted, so a
     // stale client cannot resurrect a collection the app no longer understands:
     //   registration_requests  — the old admin approval queue

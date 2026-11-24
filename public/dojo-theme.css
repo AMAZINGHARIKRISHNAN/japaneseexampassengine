@@ -274,7 +274,7 @@ body.pe .promo-banner{margin:0;background:var(--surface) !important;border:1px s
   border-radius:14px;padding:14px 16px;font-size:13.5px;color:var(--muted)}
 body.pe .promo-banner b{color:var(--matcha)}
 body.pe .promo-banner a,body.pe .n4-promo a,body.pe .footer .promo a{color:var(--ai) !important;font-weight:700}
-body.pe .dj-games{margin-bottom:22px}
+body.pe .dj-games{margin-bottom:22px;grid-template-columns:repeat(auto-fit,minmax(196px,1fr))}
 body.pe .plan-btn{animation:none;margin:0;border-radius:14px;font-size:inherit;letter-spacing:0;background:var(--surface) !important;color:inherit;border:1px solid var(--line)}
 body.pe .plan-btn:hover{box-shadow:var(--shadow-h)}
 
@@ -467,6 +467,14 @@ body.pe .plan-callout b{color:var(--ume)}
 /* mobile bottom bar */
 @media (max-width:860px){body.pe .focus-toggle-btn{bottom:84px}}
 @media (max-width:720px){body.pe .focus-panel{bottom:150px}}
+
+/* N3 Dojo parts (22–26): Dojo draws its own banner for every view */
+body.pe .dojo-part>header{display:none}
+/* Dojo has its own Today hero and scrolls to the top on every screen, so the
+   engine's hero would sit between the student and the content */
+body.pe.dojo-on .dj-dash,body.pe.dojo-on .dj-games{display:none}
+body.pe .dojo-loading{padding:40px 0;text-align:center}
+body.pe #dojoHost{display:block}
 
 /* ---------- N4 engine extras — body.pe4 ---------- */
 html:has(body.pe4){scroll-padding-top:130px}

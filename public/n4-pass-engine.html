@@ -470,9 +470,10 @@ body.light-mode .focus-box{background:var(--surface)}
     <span>Designed and Developed by <b>AMAZING HARIKRISHNAN</b><span class="sep">|</span>All the best folks</span>
   </div>
 </div>
-<header class="dj-top" id="side">
+<header class="dj-top">
   <div class="dj-top-in">
     <div class="dj-brand-row">
+      <button class="dj-pill dj-menu" id="menuBtn" aria-label="Open course sections" aria-controls="side" aria-expanded="false">☰</button>
       <a class="dj-brand" href="dashboard.html" title="Dashboard">
         <span class="dj-mark" aria-hidden="true">救</span>
         <span><span class="dj-name">N4 Pass Engine</span><br><span class="dj-sub">救急 · JLPT N4 grammar, vocab, reading &amp; listening</span></span>
@@ -485,7 +486,6 @@ body.light-mode .focus-box{background:var(--surface)}
         <a class="dj-pill" href="n3-pass-engine.html" title="Switch to N3">⇄ N3</a>
       </div>
     </div>
-    <nav class="parts dj-tabs" id="nav" aria-label="Course sections"></nav>
   </div>
 </header>
 <!-- Break banner -->
@@ -510,7 +510,11 @@ body.light-mode .focus-box{background:var(--surface)}
   </div>
 </div>
 
+<div class="scrim" id="scrim"></div>
 <div class="shell">
+  <aside class="dj-sidebar" id="side" aria-label="Course sections">
+    <nav class="parts dj-side-nav" id="nav" aria-label="Course sections"></nav>
+  </aside>
   <main>
     <div class="dj-dash">
       <section class="hero dj-banner g-kon" data-wm="合">
@@ -3197,9 +3201,9 @@ $("#resetBtn").addEventListener("click",async()=>{
 });
 
 /* ---------- mobile menu ---------- */
-/* The sidebar became the Dojo top bar; nothing to close, only keep the tab row tidy */
-function closeMenu(){}
-$("#menuBtn")?.addEventListener("click",()=>{$("#side").classList.toggle("open");$("#scrim")?.classList.toggle("on");});
+/* Sidebar: a drawer on phones */
+function closeMenu(){$("#side")?.classList.remove("open");$("#scrim")?.classList.remove("on");$("#menuBtn")?.setAttribute("aria-expanded","false");}
+$("#menuBtn")?.addEventListener("click",()=>{const o=$("#side").classList.toggle("open");$("#scrim")?.classList.toggle("on",o);$("#menuBtn").setAttribute("aria-expanded",String(o));});
 $("#scrim")?.addEventListener("click",closeMenu);
 
 

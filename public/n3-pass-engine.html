@@ -817,9 +817,10 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
 <script>(function(){var t=localStorage.getItem("n3.theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 </head>
 <body class="pe">
-<header class="dj-top" id="side">
+<header class="dj-top">
   <div class="dj-top-in">
     <div class="dj-brand-row">
+      <button class="dj-pill dj-menu" id="menuBtn" aria-label="Open course sections" aria-controls="side" aria-expanded="false">☰</button>
       <a class="dj-brand" href="dashboard.html" title="Dashboard">
         <span class="dj-mark" aria-hidden="true">救</span>
         <span><span class="dj-name">N3 Pass Engine</span><br><span class="dj-sub">救急 · JLPT N3 grammar, vocab, kanji &amp; reading</span></span>
@@ -838,7 +839,6 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
         <a class="dj-pill" href="n4-pass-engine.html" title="Switch to N4">⇄ N4</a>
       </div>
     </div>
-    <nav class="parts dj-tabs" id="nav" aria-label="Course sections"></nav>
   </div>
 </header>
 <div class="search-drop" id="searchDrop" role="listbox" aria-label="Search results"></div>
@@ -869,7 +869,11 @@ body.light-mode .type-fb.no{color:var(--vermilion)}
     <button id="idleResume">I'm back — keep going</button>
   </div>
 </div>
+<div class="scrim" id="scrim"></div>
 <div class="shell">
+  <aside class="dj-sidebar" id="side" aria-label="Course sections">
+    <nav class="parts dj-side-nav" id="nav" aria-label="Course sections"></nav>
+  </aside>
   <main>
     <div class="dj-dash">
       <section class="hero dj-banner g-kon" data-wm="合">
@@ -4627,8 +4631,10 @@ const PART_LOOK=[[/grammar|q-bank|sentence/i,"文","g-kon"],[/verb/i,"動","g-ki
   [/cheat|strategy/i,"策","g-asagi"]];
 const partLook=t=>(PART_LOOK.find(([re])=>re.test(t))||[0,"学","g-kon"]);
 PARTS.forEach((p)=>{
+  if(p.id==="p1")navBox.appendChild(el("div","nav-group","Pass Engine"));
+  if(p.id==="p22")navBox.appendChild(el("div","nav-group","N3 Dojo"));
   const a=el("a",STATE.parts[p.id]?"done":"");a.href="#"+(p.dojo||p.id);a.dataset.go=p.id;
-  a.innerHTML=`<span class="pn">${p.no.replace("PART ","")}</span><span>${p.t}</span><span class="stamp jp">済</span>`;
+  a.innerHTML=`<span class="pn">${p.no.replace("PART ","")}</span><span>${p.dojo?p.t.replace("Dojo · ",""):p.t}</span><span class="stamp jp">済</span>`;
   navBox.appendChild(a);
   const [,wm,grad]=partLook(p.t);
   const sec=el("section","part"+(p.dojo?" dojo-part":""));sec.id=p.id;
@@ -4793,8 +4799,12 @@ $("#resetBtn").addEventListener("click",async()=>{
   location.reload();
 });
 
-/* Mobile menu — the sidebar became the top bar, so only the tab scroll is left */
-function closeMenu(){const on=$("#nav a.on");if(on)on.scrollIntoView({block:"nearest",inline:"center"});}
+/* Sidebar: a drawer on phones; on every part change, keep the active part in view */
+function closeMenu(){
+  $("#side")?.classList.remove("open");$("#scrim")?.classList.remove("on");
+  const s=$("#side"),on=$("#nav a.on");
+  if(s&&on&&(on.offsetTop<s.scrollTop||on.offsetTop>s.scrollTop+s.clientHeight-48))s.scrollTop=on.offsetTop-s.clientHeight/3;
+}
 $("#menuBtn")?.addEventListener("click",()=>{$("#side").classList.toggle("open");$("#scrim")?.classList.toggle("on");});
 $("#scrim")?.addEventListener("click",closeMenu);
 
